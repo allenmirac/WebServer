@@ -16,6 +16,7 @@
 #include <iostream>
 #include <string>
 #include "../lock/locker.h"
-#include 
+#include "../log/log.h"
+
 
 #endif // WEBSERVER_SQLCONNECTIONPOOL_H
