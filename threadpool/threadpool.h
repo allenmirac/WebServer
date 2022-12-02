@@ -14,10 +14,14 @@
 #include <pthread.h>
 #include "../lock/locker.h"
 
+namespace webserver
+{
 template <typename T>
 class threadpool{
 public:
     threadpool(int actor_model, )
 };
+
+} // namespace webserver
 
 #endif // WEBSERVER_THREADPOOL_H

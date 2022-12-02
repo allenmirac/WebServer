@@ -18,5 +18,10 @@
 #include "../lock/locker.h"
 #include "../log/log.h"
 
+namespace webserver
+{
+    
+} // namespace webserver
+
 
 #endif // WEBSERVER_SQLCONNECTIONPOOL_H

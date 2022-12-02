@@ -4,6 +4,12 @@
  * @LastEditTime: 2022-12-1
  * @LastEditors: mirac
  */
+ 
+ /**
+  * use recycle queue: 
+  * m_back = (m_back+1)%m_max_size;
+  * m_front = (m_front+1)%m_max_size;
+  */
 
 #ifndef WEBSERVER_BLOCKQUEUE_H
 #define WEBSERVER_BLOCKQUEUE_H
@@ -13,10 +19,12 @@
 #include "../lock/locker.h"
 #include <sys/time.h>
 
+namespace webserver
+{
 template <typename T>
-class bolck_queue{
+class block_queue{
 public:
-    bolck_queue(int max_size=100){
+    block_queue(int max_size=100){
         if(max_size <=0){
             exit(-1);
         }
@@ -35,7 +43,7 @@ public:
         m_mutex.unlock();
     }
 
-    ~bolck_queue(){
+    ~block_queue(){
         m_mutex.lock();
         if(m_array != nullptr){
             delete[] m_array;
@@ -80,11 +88,11 @@ public:
             return false;
         }
         val = m_array[m_back];
-        m_mutex.unloc();
+        m_mutex.unlock();
         return true;
     }
 
-    int size(){
+    int size() const {
         int temp=0;
         m_mutex.lock();
         temp=m_size;
@@ -92,7 +100,7 @@ public:
         return temp;
     }
 
-    int max_size(){
+    int max_size() const {
         int temp=0;
         m_mutex.lock();
         temp=m_max_size;
@@ -109,7 +117,7 @@ public:
         }
         m_back = (m_back+1)%m_max_size;
         m_size +=1;
-        m_array[m_back] = item;
+        m_array[m_back] = std::move(item);//!!!!!!!!!!!!!!!!!!!!
         m_cond.broadcast();
         m_mutex.unlock();
         return true;
@@ -129,30 +137,25 @@ public:
         m_mutex.unlock();
         return true;
     }
-    //增加了超时处理
+
     bool pop(T &item, int ms_timeout)
     {
         struct timespec t = {0, 0};
         struct timeval now = {0, 0};
         gettimeofday(&now, NULL);
         m_mutex.lock();
-        if (m_size <= 0)
-        {
+        if (m_size <= 0) {
             t.tv_sec = now.tv_sec + ms_timeout / 1000;
             t.tv_nsec = (ms_timeout % 1000) * 1000;
-            if (!m_cond.timewait(m_mutex.get(), t))
-            {
+            if (!m_cond.timewait(m_mutex.get(), t)) {
                 m_mutex.unlock();
                 return false;
             }
         }
-
-        if (m_size <= 0)
-        {
+        if (m_size <= 0) {
             m_mutex.unlock();
             return false;
         }
-
         m_front = (m_front + 1) % m_max_size;
         item = m_array[m_front];
         m_size--;
@@ -169,5 +172,5 @@ private:
     int m_front;
     int m_back;
 };
-
+} // namespace webserver
 #endif // WEBSERVER_BLOCKQUEUE_H

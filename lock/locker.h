@@ -5,13 +5,18 @@
  * @LastEditors: mirac
  */
 
+/**
+ * what is pthread_cond_wait ...:
+ * https://blog.csdn.net/zzran/article/details/8830213
+ */
 #ifndef WEBSERVER_LOCKER_H
 #define WEBSERVER_LOCKER_H
 
 #include <exception>
 #include <pthread.h>
 #include <semaphore.h>
-
+namespace webserver
+{
 class locker {
 public:
     locker(){
@@ -92,4 +97,6 @@ public:
 private:
     pthread_cond_t m_cond;
 };
+} // namespace webserver
+
 #endif //WEBSERVER_LOCKER_H
