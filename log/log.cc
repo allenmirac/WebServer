@@ -1,8 +1,8 @@
 /*
- * @Author: mirac
+ * @Author: miracle
  * @Date: 2022-12-2 16.45
- * @LastEditTime: 2022-12-2
- * @LastEditors: mirac
+ * @LastEditTime: 2022-12-3
+ * @LastEditors: miracle
  */
 
 #include "log.h"
@@ -122,7 +122,7 @@ void Log::write_log(int level, const char *format, ...){
     log_str = m_buf;
     m_mutex.unlock();
 
-    if(m_is_async && !m_log_queue->full()){
+    if(m_is_async && !m_log_queue->full()) {
         m_log_queue->push(log_str);
     } else {
         m_mutex.lock();

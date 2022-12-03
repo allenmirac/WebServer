@@ -1,8 +1,8 @@
 /*
- * @Author: mirac
+ * @Author: miracle
  * @Date: 2022-12-1 21.13
  * @LastEditTime: 2022-12-2
- * @LastEditors: mirac
+ * @LastEditors: miracle
  */
 
 #ifndef WEBSERVER_LOG_H
