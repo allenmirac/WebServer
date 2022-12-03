@@ -50,7 +50,7 @@ private:
     int m_today;        // which day the log writed
     FILE *m_fp;         // file pointer
     char *m_buf;
-    block_queue<std::string> *m_log_queue;  // block queue
+    block_queue<std::string> *m_log_queue;  // Buffered queue, use it when m_is_async is true
     bool m_is_async;    // is asynchronous or not
     locker m_mutex;     // mutex
     int m_close_log;    // close
