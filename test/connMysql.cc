@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 	MYSQL conn;
 	mysql_init(&conn);
 
-	if (!mysql_real_connect(&conn, "localhost", "test", "", "user", 3306, NULL, 0))
+	if (!mysql_real_connect(&conn, "localhost", "root", "", "user", 0, NULL, 0))
 	{
 		cout << "mysql connect failed" << endl;
 		exit(-1);
