@@ -17,10 +17,10 @@
 namespace webserver
 {
 template <typename T>
-class threadpool{
+class ThreadPool{
 public:
-    threadpool(int actor_model, connection_pool* connection_pool, int thread_number = 8, int max_requests = 10000);
-    ~threadpool();
+    ThreadPool(int actor_model, connection_pool* connection_pool, int thread_number = 8, int max_requests = 10000);
+    ~ThreadPool();
 
     bool append(T* request, int state);
     bool append_p(T* request);
@@ -39,4 +39,4 @@ private:
 };
 } // namespace webserver
 
-#endif // WEBSERVER_THREADPOOL_H
+#endif // WEBSERVER_ThreadPool_H

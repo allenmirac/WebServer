@@ -3,7 +3,7 @@
 namespace webserver
 {
 template <typename T>
-threadpool<T>::threadpool(int actor_model, connection_pool *connPool, int thread_number, int max_requests)
+ThreadPool<T>::ThreadPool(int actor_model, connection_pool *connPool, int thread_number, int max_requests)
     :m_actor_model(actor_model),
     m_connPool(connPool), 
     m_thread_number(thread_number), 
@@ -28,14 +28,14 @@ threadpool<T>::threadpool(int actor_model, connection_pool *connPool, int thread
 }
 
 template <typename T>
-threadpool<T>::~threadpool(){
+ThreadPool<T>::~ThreadPool(){
     if(!m_threads){
         delete[] m_threads;
     }
 }
 
 template <typename T>
-bool threadpool<T>::append(T *request, int state){
+bool ThreadPool<T>::append(T *request, int state){
     m_queuelocker.lock();
     if(m_workqueue.size() >= m_max_requests){
         m_queuelocker.unlock();
@@ -49,7 +49,7 @@ bool threadpool<T>::append(T *request, int state){
 }
 
 template <typename T>
-bool threadpool<T>::append_p(T *request){
+bool ThreadPool<T>::append_p(T *request){
     m_queuelocker.lock();
     if(m_workqueue.size() >= m_max_requests){
         m_queuelocker.unlock();
@@ -62,7 +62,7 @@ bool threadpool<T>::append_p(T *request){
 }
 
 template <typename T>
-void threadpool<T>::run(){
+void ThreadPool<T>::run(){
     while(true){
         m_queuestat.wait();
         m_queuelocker.lock();
@@ -101,4 +101,10 @@ void threadpool<T>::run(){
     }
 }
 
+template <typename T>
+void *ThreadPool<T>::worker(void*arg){
+    ThreadPool *pool = std::static_cast<ThreadPool *> arg;
+    pool->run();
+    return pool;
+}
 } // namespace webserver
