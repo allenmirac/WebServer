@@ -27,10 +27,10 @@ public:
     ~locker(){
         pthread_mutex_destroy(&m_mutex);
     }
-    inline bool lock(){
+    bool lock(){
         return pthread_mutex_lock(&m_mutex);
     }
-    inline bool unlock(){
+    bool unlock(){
         return pthread_mutex_unlock(&m_mutex);
     }
     pthread_mutex_t* get(){
@@ -59,11 +59,11 @@ public:
         sem_destroy(&m_sem);
     }
     // semaphore--;
-    inline bool wait(){
+    bool wait(){
         return sem_wait(&m_sem);
     }
     // semaphore++;
-    inline bool post(){
+    bool post(){
         return sem_post(&m_sem) == 0;
     }
 private:
@@ -81,20 +81,20 @@ public:
         pthread_cond_destroy(&m_cond);
     }
 
-    inline bool wait(pthread_mutex_t* mutex){
+    bool wait(locker* mutex){
         int ret=0;
-        ret = pthread_cond_wait(&m_cond, mutex);
+        ret = pthread_cond_wait(&m_cond, mutex->get());
         return ret==0;
     }
-    inline bool timewait(pthread_mutex_t* mutex, struct timespec t){
+    bool timewait(pthread_mutex_t* mutex, struct timespec t){
         int ret=0;
         ret = pthread_cond_timedwait(&m_cond, mutex, &t);
         return ret==0;
     }
-    inline bool signal(){
+    bool signal(){
         return pthread_cond_signal(&m_cond) == 0;
     }
-    inline bool broadcast(){
+    bool broadcast(){
         return pthread_cond_broadcast(&m_cond) == 0;
     }
 private:

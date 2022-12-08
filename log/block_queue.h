@@ -92,7 +92,7 @@ public:
         return true;
     }
 
-    int size() const {
+    int size(){
         int temp=0;
         m_mutex.lock();
         temp=m_size;
@@ -100,7 +100,7 @@ public:
         return temp;
     }
 
-    int max_size() const {
+    int max_size(){
         int temp=0;
         m_mutex.lock();
         temp=m_max_size;
@@ -126,7 +126,7 @@ public:
     bool pop(T& item){
         m_mutex.lock();
         while(m_size <= 0){
-            if(!m_cond.wait(m_mutex)){
+            if(!m_cond.wait(&m_mutex)){
                 m_mutex.unlock();
                 return false;
             }

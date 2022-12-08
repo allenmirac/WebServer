@@ -24,6 +24,7 @@ public:
 
     static void *flush_log_thread(void* args){
         Log::get_instance()->async_write_log();
+        return nullptr;
     }
     bool init(const char *file_name, int close_log, int log_buf_size = 8192, int split_lines = 5000000, int max_queue_size = 0);
 
@@ -35,31 +36,32 @@ private:
     virtual ~Log();
     void *async_write_log(){
         std::string single_log;
-        while(m_log_queue->pop(single_log)){
-            m_mutex.lock();
-            fputs(single_log.c_str(), m_fp); // write to the m_fp
-            m_mutex.unlock();
+        while(log_queue_->pop(single_log)){
+            mutex_.lock();
+            fputs(single_log.c_str(), fp_); // write to the fp
+            mutex_.unlock();
         }
+        return nullptr;
     }
 private:
     char dir_name[128]; // dir name
     char log_name[128]; // file name
-    int m_split_lines;  // max lines
-    int m_log_buf_size;   // buf size
-    long long m_count;  // line count
-    int m_today;        // which day the log writed
-    FILE *m_fp;         // file pointer
-    char *m_buf;
-    block_queue<std::string> *m_log_queue;  // Buffered queue, use it when m_is_async is true
-    bool m_is_async;    // is asynchronous or not
-    locker m_mutex;     // mutex
-    int m_close_log;    // close
+    int split_lines_;  // max lines
+    int log_buf_size_;   // buf size
+    long long count_;  // line count
+    int today;        // which day the log writed
+    FILE *fp_;         // file pointer
+    char *buf_;
+    block_queue<std::string> *log_queue_;  // Buffered queue, use it when is_async is true
+    bool is_async_;    // is asynchronous or not
+    locker mutex_;     // mutex
+    int close_log_;    // close
 };
 
-#define LOG_DEBUG(format, ...) if(0==m_close_log) {Log::get_instance()->write_log(0, format, ##__VA_ARGS__); Log::get_instance()->flush();}
-#define LOG_INFO(format, ...) if(0==m_close_log) {Log::get_instance()->write_log(1, format, ##__VA_ARGS__); Log::get_instance()->flush();}
-#define LOG_WARN(format, ...) if(0==m_close_log) {Log::get_instance()->write_log(2, format, ##__VA_ARGS__); Log::get_instance()->flush();}
-#define LOG_ERROR(format, ...) if(0==m_close_log) {Log::get_instance()->write_log(3, format, ##__VA_ARGS__); Log::get_instance()->flush();}
+#define LOG_DEBUG(format, ...) if(0==close_log_) {Log::get_instance()->write_log(0, format, ##__VA_ARGS__); Log::get_instance()->flush();}
+#define LOG_INFO(format, ...) if(0==close_log_) {Log::get_instance()->write_log(1, format, ##__VA_ARGS__); Log::get_instance()->flush();}
+#define LOG_WARN(format, ...) if(0==close_log_) {Log::get_instance()->write_log(2, format, ##__VA_ARGS__); Log::get_instance()->flush();}
+#define LOG_ERROR(format, ...) if(0==close_log_) {Log::get_instance()->write_log(3, format, ##__VA_ARGS__); Log::get_instance()->flush();}
 
 
 } // namespace webserver
