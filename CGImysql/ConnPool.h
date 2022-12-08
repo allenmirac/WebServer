@@ -35,11 +35,11 @@ private:
     int freeConn_;      /*rest conn num*/
     locker lock;        /*lock*/
     sql::Driver* driver;/* driver */
-    static ConnPool* connPool;
     std::list<sql::Connection *> connList; /*pool*/
+    static ConnPool* connPool;
     sql::Connection* CreateConnection();
     sem reserve;
-private:
+public:
     std::string url_;          /*eg:"tcp://127.0.0.1:3306"*/
     std::string user_;         /*user name*/
     std::string password_;     /*password*/

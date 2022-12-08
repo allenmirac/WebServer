@@ -32,7 +32,7 @@ int main() {
 	while(rs->next()){
 		cout<<"id = "<<rs->getInt(1)<<endl;
 		cout<<"name = "<<rs->getString(2)<<endl;
-        
+
 	}
     cout<<connPool->GetFreeConn()<<endl;
     con = connPool->GetConnection();
