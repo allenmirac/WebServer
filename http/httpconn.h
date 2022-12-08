@@ -9,13 +9,12 @@
 #define WEBSERVER_HTTPCONN_H
 
 #include "../InetAddress/InetAddress.h"
-#include "../Buffer/Buffer.h"
-#include "../CGImysql/sql_connection_pool.h"
+#include "../CGImysql/connpool.h"
 #include <netinet/in.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
-#include <mysql/mysql.h>
 #include <map>
+#include <cppconn/connection.h>
 #include <string>
 
 namespace webserver
@@ -24,6 +23,8 @@ namespace webserver
 class HttpConn {
 public:
     static const int FILENAME_LEN = 200;
+    static const int READ_BUFFER_SIZE = 2048;
+    static const int WRITE_BUFFER_SIZE = 1024;
     enum METHOD {
         GET = 0,
         POST,
@@ -68,7 +69,7 @@ public:
     sockaddr_in get_address(){
         return addr_.getAddr();
     };
-    void init_mysql_result(connection_pool *connPool);
+    void init_mysql_result(ConnPool *connPool);
     int timer_falg;
     int improv;
 
@@ -80,7 +81,7 @@ private:
     HTTP_CODE parse_headers(char *text);
     HTTP_CODE parse_content(char *text);
     HTTP_CODE do_request();
-    // char *get_line() { return read_buf_ + start_line_;};
+    char *get_line() { return read_buf_ + start_line_;};
     LINE_STATUS parse_line();
     void unmap();
     bool add_response(const char *format, ...);
@@ -95,14 +96,14 @@ private:
 public:
     static int epoll_fd_;
     static int user_count_;
-    MYSQL *mysql;
+    sql::Connection *mysql;
     int state_;
 
 private:
     int fd_;
     InetAddress addr_;
-    Buffer read_buf_;
-    Buffer write_buf_;
+    char read_buf_[READ_BUFFER_SIZE];
+    char write_buf_[WRITE_BUFFER_SIZE];
     int read_idx_;
     int write_idx_;
     int checked_idx_;
