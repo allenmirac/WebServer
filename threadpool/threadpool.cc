@@ -3,7 +3,7 @@
 namespace webserver
 {
 template <typename T>
-ThreadPool<T>::ThreadPool(int actor_model, connection_pool *connPool, int thread_number, int max_requests)
+ThreadPool<T>::ThreadPool(int actor_model, ConnPool*connPool, int thread_number, int max_requests)
     :m_actor_model(actor_model),
     m_connPool(connPool), 
     m_thread_number(thread_number), 

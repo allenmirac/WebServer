@@ -12,14 +12,14 @@
 #include <pthread.h>
 #include <list>
 #include "../lock/locker.h"
-#include "../CGImysql/sql_connection_pool.h"
+#include "../CGImysql/connpool.h"
 
 namespace webserver
 {
 template <typename T>
 class ThreadPool{
 public:
-    ThreadPool(int actor_model, connection_pool* connection_pool, int thread_number = 8, int max_requests = 10000);
+    ThreadPool(int actor_model, ConnPool* connection_pool, int thread_number = 8, int max_requests = 10000);
     ~ThreadPool();
 
     bool append(T* request, int state);
