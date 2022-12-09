@@ -34,7 +34,7 @@ private:
     std::list<T*> m_workqueue;  // request list
     locker m_queuelocker;       // mutex
     sem m_queuestat;            // signal of work
-    connection_pool *m_connPool;// 
+    ConnPool *m_connPool;// 
     int m_actor_model;          // model switch
 };
 } // namespace webserver
