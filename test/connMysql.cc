@@ -8,7 +8,7 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include <mysql_driver.h>
-#include "../CGImysql/ConnPool.h"
+#include "../CGImysql/connpool.h"
 
 using namespace std;
 using namespace webserver;
