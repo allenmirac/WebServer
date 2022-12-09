@@ -15,6 +15,8 @@
 #include <sys/uio.h>
 #include <map>
 #include <cppconn/connection.h>
+#include <cppconn/statement.h>
+#include <cppconn/resultset.h>
 #include <string>
 
 namespace webserver
