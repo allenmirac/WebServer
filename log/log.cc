@@ -73,7 +73,7 @@ void Log::write_log(int level, const char *format, ...){
     char s[16] = {0};
     switch(level){
     case 0:
-        strcpy(s, "[debug:");
+        strcpy(s, "[debug]:");
         break;
     case 1:
         strcpy(s, "[info]:");
