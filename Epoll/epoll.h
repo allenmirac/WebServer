@@ -11,6 +11,8 @@
 #include <sys/epoll.h>
 #include <vector>
 #include <fcntl.h>
+#include <strings.h>
+#include <unistd.h>
 
 namespace webserver{
 class Epoll

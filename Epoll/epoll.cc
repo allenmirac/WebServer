@@ -1,7 +1,5 @@
 #include "epoll.h"
 #include "../util/util.h"
-#include <strings.h>
-#include <unistd.h>
 
 #define MAX_EVENTS 1000
 
