@@ -19,3 +19,6 @@ int main(){
     LOG_DEBUG("123456");
     return 0;
 }
+/*
+g++ -g -o testLog testLog.cc ../log/log.cc -lpthread
+*/
