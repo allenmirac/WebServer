@@ -10,14 +10,15 @@
 
 #include "../InetAddress/InetAddress.h"
 #include "../CGImysql/connpool.h"
+#include "../Epoll/epoll.h"
 #include <netinet/in.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <map>
+#include <string>
 #include <cppconn/connection.h>
 #include <cppconn/statement.h>
 #include <cppconn/resultset.h>
-#include <string>
 
 namespace webserver
 {
@@ -39,7 +40,7 @@ public:
         PATH
     };
     enum CHECK_STATE {
-        CHECK_STATE_REQUEST = 0,
+        CHECK_STATE_REQUESTLINE = 0,
         CHECK_STATE_HEADER,
         CHECK_STATE_CONTENT
     };
@@ -63,7 +64,7 @@ public:
     ~HttpConn(){}
 
 public:
-    void init(int sockfd, const sockaddr_in &addr, char*, int, int, std::string user, std::string password, std::string sqlname);
+    void init(int sockfd, InetAddress addr, char* root, int, int, std::string user, std::string password, std::string dataBaseName);
     void close_conn(bool real_close = true);
     void process();
     bool read_once();
@@ -103,6 +104,7 @@ public:
 
 private:
     int fd_;
+    Epoll epoll;
     InetAddress addr_;
     char read_buf_[READ_BUFFER_SIZE];
     char write_buf_[WRITE_BUFFER_SIZE];
@@ -129,7 +131,7 @@ private:
     char *doc_root_;
 
     std::map<std::string, std::string> users_;
-    int TRIG_Mode_;
+    int TRIGMode_;
     int close_log_;
 
     char sql_user_[100];
