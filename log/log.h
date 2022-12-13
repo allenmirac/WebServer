@@ -11,6 +11,8 @@
 #include <pthread.h>
 #include <iostream>
 #include <string>
+#include <cstring>
+#include <stdarg.h> /*va_start*/
 #include "block_queue.h"
 
 namespace webserver
@@ -18,8 +20,11 @@ namespace webserver
 class Log{
 public:
     static Log *get_instance(){
-        static Log instance;
-        return &instance;
+        if(instance_==nullptr){
+            instance_ = new Log();
+        }
+        // std::cout<<"get_instance"<<std::endl;
+        return instance_;
     }
 
     static void *flush_log_thread(void* args){
@@ -58,6 +63,7 @@ private:
     bool is_async_;    // is asynchronous or not
     locker mutex_;     // mutex
     int close_log_;    // close
+    static Log *instance_;
 };
 
 #define LOG_DEBUG(format, ...) if(0==Log::get_instance()->get_close_log()) {Log::get_instance()->write_log(0, format, ##__VA_ARGS__); Log::get_instance()->flush();}

@@ -6,10 +6,10 @@
  */
 
 #include "log.h"
-#include <cstring>
-#include <stdarg.h> /*va_start*/
 
 namespace webserver {
+
+Log *Log::instance_ = nullptr;
 
 Log::Log(){
     count_=0;
@@ -34,7 +34,7 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
     log_buf_size = log_buf_size;
     buf_ = new char[log_buf_size];
     memset(buf_, '\0', log_buf_size);
-    split_lines = split_lines;
+    split_lines_ = split_lines; // fix bug: split_line_  init here
 
     time_t t = time(nullptr);
     struct tm *sys_tm = localtime(&t);
@@ -61,6 +61,7 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
     if(fp_ != nullptr){
         return false;
     }
+    std::cout<<"init success"<<std::endl;
     return true;
 }
 
@@ -114,22 +115,31 @@ void Log::write_log(int level, const char *format, ...){
     std::string log_str;// the true output log string.
 
     mutex_.lock();
+    // int n=1, m=0;
     int n = snprintf(buf_, 48, "%d-%02d-%02d %02d:%02d:%02d.%06ld %s", my_tm.tm_year + 1900, my_tm.tm_mon+1, my_tm.tm_mday,
                     my_tm.tm_hour, my_tm.tm_min, my_tm.tm_sec, now.tv_usec, s);
     // https://langzi989.github.io/2018/01/01/C%E4%B8%ADsnprintf%E4%B8%8Evsnprintf%E5%87%BD%E6%95%B0/
     int m = vsnprintf(buf_+n, log_buf_size_-1, format, valist);
+    // std::cout<<n<<"  "<<m<<std::endl;
+    // buf_[0]=1;
     buf_[n+m] = '\n';
     buf_[n+m+1] = '\0';
     log_str = buf_;
+    // std::cout<<"write_log fini"<<std::endl;
     mutex_.unlock();
 
     if(is_async_ && !log_queue_->full()) {
         log_queue_->push(log_str);
     } else {
         mutex_.lock();
+        // std::cout<<log_str<<std::endl;
         fputs(log_str.c_str(), fp_);
-        mutex_.lock();
+        // if(a>0){
+        //     std::cout<<"write_log fini"<<std::endl;
+        // }
+        mutex_.unlock(); // fix bug: unlock();
     }
+    // std::cout<<"write_log fini"<<std::endl;
     va_end(valist);
 }
 

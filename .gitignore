@@ -1,6 +1,13 @@
+# 忽略掉所有文件
+*
+# 取消忽略所有带有后缀名的文件
+!*.*
+# 取消忽略所有目录
+!*/
+
 cmake-build-debug
 .idea
 .vscode
 # CMakeLists.txt
 test/connMysql
-test/testlog
+test/*.log
