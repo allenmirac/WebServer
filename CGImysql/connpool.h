@@ -8,13 +8,13 @@
 #ifndef WEBSERVER_SQLCONNECTIONPOOL_H
 #define WEBSERVER_SQLCONNECTIONPOOL_H
 
+#include "../lock/locker.h"
+#include "../log/log.h"
 #include <list>
 #include <error.h>
 #include <mysql_connection.h>
 #include <string>
 #include <mysql_driver.h>
-#include "../lock/locker.h"
-#include "../log/log.h"
 
 namespace webserver
 {
