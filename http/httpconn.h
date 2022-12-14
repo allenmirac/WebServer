@@ -19,6 +19,7 @@
 #include <cppconn/connection.h>
 #include <cppconn/statement.h>
 #include <cppconn/resultset.h>
+#include <sys/mman.h>
 
 namespace webserver
 {
@@ -80,7 +81,7 @@ private:
     void init();
     HTTP_CODE process_read();
     bool process_write(HTTP_CODE ret);
-    HTTP_CODE praserequest_line(char *text);
+    HTTP_CODE parse_request_line(char *text);
     HTTP_CODE parse_headers(char *text);
     HTTP_CODE parse_content(char *text);
     HTTP_CODE do_request();
@@ -118,7 +119,7 @@ private:
     char *url_;
     char *version_;
     char *host_;
-    char *content_length_;
+    int content_length_;
     bool linger_;
     char *file_address_;
     struct stat file_stat_;
