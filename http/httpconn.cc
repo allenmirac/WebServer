@@ -6,6 +6,7 @@ const char *ok_200_title = "OK";
 const char *error_400_title = "Bad Request";
 const char *error_400_form = "Your request has bad syntax or is inherently impossible to staisfy.\n";
 const char *error_403_title = "Forbidden";
+const char *error_403_form = "You do not have permission to get file form this server.\n";
 const char *error_404_title = "Not Found";
 const char *error_404_form = "The requested file was not found on this server.\n";
 const char *error_500_title = "Internal Error";
@@ -415,4 +416,117 @@ bool HttpConn::write()
     }
 }
 
+bool HttpConn::add_response(const char *format, ...){
+    if(write_idx_ >= WRITE_BUFFER_SIZE){
+        return false;
+    }
+    va_list arg_list;
+    va_start(arg_list, format);
+    int len = vsnprintf(write_buf_ + write_idx_, WRITE_BUFFER_SIZE-1-write_idx_, format, arg_list);
+    if(len >= WRITE_BUFFER_SIZE-1-write_idx_){
+        va_end(arg_list);
+        return false;
+    }
+    write_idx_ += len;
+    va_end(arg_list);
+    LOG_INFO("request:%s", write_buf_);
+    return true;
+}
+
+bool HttpConn::add_status_line(int status, const char *title){
+    return add_response("%s %d %s\r\n", "HTTP/1.1", status, title);
+}
+bool HttpConn::add_headers(int content_len){
+    return add_content_length(content_len) && add_linger()
+        && add_blank_line();
+}
+bool HttpConn::add_content_type(){
+    return add_response("Content-Type:%s\r\n", "text/html");
+}
+bool HttpConn::add_linger()
+{
+    return add_response("Connection:%s\r\n", (linger_ == true) ? "keep-alive" : "close");
+}
+bool HttpConn::add_blank_line()
+{
+    return add_response("%s", "\r\n");
+}
+bool HttpConn::add_content(const char *content)
+{
+    return add_response("%s", content);
+}
+bool HttpConn::process_write(HTTP_CODE ret)
+{
+    switch (ret)
+    {
+    case INTERNAL_ERROR:
+    {
+        add_status_line(500, error_500_title);
+        add_headers(strlen(error_500_form));
+        if (!add_content(error_500_form))
+            return false;
+        break;
+    }
+    case BAD_REQUEST:
+    {
+        add_status_line(404, error_404_title);
+        add_headers(strlen(error_404_form));
+        if (!add_content(error_404_form))
+            return false;
+        break;
+    }
+    case FORBIDDEN_REQUEST:
+    {
+        add_status_line(403, error_403_title);
+        add_headers(strlen(error_403_form));
+        if (!add_content(error_403_form))
+            return false;
+        break;
+    }
+    case FILE_REQUEST:
+    {
+        add_status_line(200, ok_200_title);
+        if (file_stat_.st_size != 0)
+        {
+            add_headers(file_stat_.st_size);
+            iv_[0].iov_base = write_buf_;
+            iv_[0].iov_len = write_idx_;
+            iv_[1].iov_base = file_address_;
+            iv_[1].iov_len = file_stat_.st_size;
+            iv_count_ = 2;
+            bytes_to_send = write_idx_ + file_stat_.st_size;
+            return true;
+        }
+        else
+        {
+            const char *ok_string = "<html><body></body></html>";
+            add_headers(strlen(ok_string));
+            if (!add_content(ok_string))
+                return false;
+        }
+    }
+    default:
+        return false;
+    }
+    iv_[0].iov_base = write_buf_;
+    iv_[0].iov_len = write_idx_;
+    iv_count_ = 1;
+    bytes_to_send = write_idx_;
+    return true;
+}
+void HttpConn::process()
+{
+    HTTP_CODE read_ret = process_read();
+    if (read_ret == NO_REQUEST)
+    {
+        epoll.modifyFd(fd_, EPOLLIN, TRIGMode_);
+        return;
+    }
+    bool write_ret = process_write(read_ret);
+    if (!write_ret)
+    {
+        close_conn();
+    }
+    epoll.modifyFd(fd_, EPOLLOUT, TRIGMode_);
+}
 } // namespace webserver
