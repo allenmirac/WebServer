@@ -30,7 +30,7 @@ public:
     void timer(int connfd, InetAddress client_addr);
     void adjust_timer(UtilTimer *timer);
     void deal_timer(UtilTimer *timer, int sockfd);
-    bool dealclinetdata();
+    bool dealclientdata();
     bool dealwithsignal(bool& timeout, bool& stop_server);
     void dealwithread(int sockfd);
     void dealwithwrite(int sockfd);
