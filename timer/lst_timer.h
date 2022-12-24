@@ -8,9 +8,13 @@
 #ifndef WEBSERVER_LSTTIMER_H
 #define WEBSERVER_LSTTIMER_H
 
+#include "../Epoll/epoll.h"
+#include "../http/httpconn.h"
+#include <errno.h>
 #include <arpa/inet.h>
 #include <time.h>
-#include "../Epoll/epoll.h"
+#include <cstring>
+#include <assert.h>
 
 namespace webserver
 {
@@ -55,6 +59,8 @@ public:
     void addsig(int sig, void(handler)(int), bool restart=true);
     void timer_handler();
     void show_error(int connfd, const char *info);
+    void addFd(int fd, bool one_shot, int TRIGMode);
+    static void sig_handler(int sig);
 public:
     static int *u_pipefd;
     SortTimerLst timer_lst_;
