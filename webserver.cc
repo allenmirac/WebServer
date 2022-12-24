@@ -123,7 +123,8 @@ void WebServer::eventListen()
 
     int flag = 1;
     setsockopt(listenfd_, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
-    ret = bind(listenfd_, (struct sockaddr *)&addr.getAddr(), sizeof(addr.getAddr_len()));
+    sockaddr_in address = addr.getAddr();
+    ret = bind(listenfd_, (struct sockaddr *)&address, sizeof(addr.getAddr_len()));
     assert(ret >= 0);
     ret = listen(listenfd_, 5);
     assert(ret >= 0);
@@ -194,10 +195,11 @@ void WebServer::deal_timer(UtilTimer *timer, int sockfd)
 
 bool WebServer::dealclientdata()
 {
-    InetAddress client_address;
-    socklen_t client_addrlength = sizeof(client_address);
+    InetAddress client_addr;
+    sockaddr_in addr = client_addr.getAddr();
+    socklen_t client_addrlength = sizeof(client_addr);
     if (0 == LISTENTrigmode_){
-        int connfd = accept(listenfd_, (struct sockaddr *)&client_address.getAddr(), &client_addrlength);
+        int connfd = accept(listenfd_, (struct sockaddr *)&addr, &client_addrlength);
         if (connfd < 0){
             LOG_ERROR("%s:errno is:%d", "accept error", errno);
             return false;
@@ -207,10 +209,10 @@ bool WebServer::dealclientdata()
             LOG_ERROR("%s", "Internal server busy");
             return false;
         }
-        timer(connfd, client_address);
+        timer(connfd, client_addr);
     }else {
         while (1){
-            int connfd = accept(listenfd_, (struct sockaddr *)&client_address.getAddr(), &client_addrlength);
+            int connfd = accept(listenfd_, (struct sockaddr *)&addr, &client_addrlength);
             if (connfd < 0)
             {
                 LOG_ERROR("%s:errno is:%d", "accept error", errno);
@@ -222,7 +224,7 @@ bool WebServer::dealclientdata()
                 LOG_ERROR("%s", "Internal server busy");
                 break;
             }
-            timer(connfd, client_address);
+            timer(connfd, client_addr);
         }
         return false;
     }

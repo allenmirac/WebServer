@@ -10,7 +10,7 @@ else
 endif
 
 server: main.cc  ./timer/lst_timer.cc ./http/httpconn.cc ./log/log.cc ./CGImysql/connpool.cc  webserver.cc config.cc
-	$(CXX) -o server  $^ $(CXXFLAGS) -lpthread -lmysqlclient
+	$(CXX) -o server  $^ $(CXXFLAGS) -lpthread
 
 clean:
 	rm  -r servers

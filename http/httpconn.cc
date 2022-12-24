@@ -175,29 +175,31 @@ HttpConn::HTTP_CODE HttpConn::parse_request_line(char *text){
 }
 
 HttpConn::HTTP_CODE HttpConn::parse_headers(char *text){
-    if(text[0] == '\0'){
-        if(content_length_ != 0){
-            checked_idx_ = CHECK_STATE_CONTENT;
+    if (text[0] == '\0'){
+        if (content_length_ != 0){
+            check_state_ = CHECK_STATE_CONTENT;
             return NO_REQUEST;
-        } else if(strncasecmp(text, "Connection:", 11)==0){
-            text += 11;
-            text += strspn(text, " \t");
-            if(strcasecmp(text, "keep-alive")==0){
-                linger_ = true;
-            }
-        } else if(strncasecmp(text, "Content-length:", 15)==0){
-            text += 15;
-            text += strspn(text, " \t");
-            content_length_ = atol(text);
-        } else if(strncasecmp(text, "Host:", 5) == 0){
-            text += 5;
-            text += strspn(text, " \t");
-            host_ = text;
-        } else {
-            LOG_INFO("oop!unknow header: %s", text);
         }
-        return NO_REQUEST;
+        return GET_REQUEST;
+    }else if (strncasecmp(text, "Connection:", 11) == 0){
+        text += 11;
+        text += strspn(text, " \t");
+        if (strcasecmp(text, "keep-alive") == 0)
+        {
+            linger_ = true;
+        }
+    }else if (strncasecmp(text, "Content-length:", 15) == 0){
+        text += 15;
+        text += strspn(text, " \t");
+        content_length_ = atol(text);
+    }else if (strncasecmp(text, "Host:", 5) == 0){
+        text += 5;
+        text += strspn(text, " \t");
+        host_ = text;
+    }else{
+        LOG_INFO("oop!unknow header: %s", text);
     }
+    return NO_REQUEST;
 }
 
 HttpConn::HTTP_CODE HttpConn::parse_content(char *text){
