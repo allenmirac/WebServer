@@ -2,7 +2,10 @@
 #include "./http/httpconn.h"
 #include "./InetAddress/inetaddress.h"
 #include "./timer/lst_timer.h"
+#include "./log/log.h"
 #include <string>
+#include <assert.h>
+#include <signal.h>
 
 const int MAX_FD = 65536;
 const int MAX_EVENT_NUMBER = 10000;
@@ -41,14 +44,16 @@ public:
     int actormodel_;
 
     int pipefd_[2];
-    Epoll epoll_;
+    Epoll *epoll_;
+    int epfd;
     HttpConn *users_;
 
     //数据库相关
     ConnPool *connPool_;
-    string user_;         //登陆数据库用户名
-    string passWord_;     //登陆数据库密码
-    string databaseName_; //使用数据库名
+    std::string url_;
+    std::string user_;         //登陆数据库用户名
+    std::string passWord_;     //登陆数据库密码
+    std::string databaseName_; //使用数据库名
     int sql_num_;
 
     //线程池相关
