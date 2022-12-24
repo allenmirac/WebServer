@@ -5,8 +5,7 @@
  * @LastEditors: miracle
  */
 
-#include <cstring>
-#include "InetAddress.h"
+#include "inetaddress.h"
 
 namespace webserver {
 

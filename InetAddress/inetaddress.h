@@ -9,6 +9,7 @@
 #define WEBSERVER_INETADDRESS_H
 
 #include <arpa/inet.h>
+#include <cstring>
 
 namespace webserver
 {
