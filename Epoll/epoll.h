@@ -24,6 +24,10 @@ public:
     Epoll();
     ~Epoll();
     int setnonblocking(int fd);
+    int getEpfd(){return epfd;}
+    void setEpfd(int fd){ epfd = fd;}
+    epoll_event *getEvents(){ return events;}
+    void setEvent(epoll_event *events);
     void addFd(int fd, bool one_shot, int TRIGMode);
     void removeFd(int fd);
     void modifyFd(int fd, uint32_t ev, int TRIGMode);

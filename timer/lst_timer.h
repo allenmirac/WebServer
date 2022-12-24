@@ -21,7 +21,7 @@ namespace webserver
 class UtilTimer;
 
 struct client_data {
-    sockaddr_in address;
+    InetAddress address;
     int sockfd;
     UtilTimer* timer;
 };
@@ -65,6 +65,7 @@ public:
     static int *u_pipefd;
     SortTimerLst timer_lst_;
     static Epoll epoll;
+    static int epfd;
     int TIMESLOT_;
 };
 

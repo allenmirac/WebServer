@@ -150,6 +150,8 @@ void Utils::addFd(int fd, bool one_shot, int TRIGMode)
 
     if (one_shot)
         event.events |= EPOLLONESHOT;
+
+    epoll.setEvent(&event);
     epoll.addFd(fd, one_shot, TRIGMode);
     setnonblocking(fd);
 }
@@ -176,6 +178,7 @@ void Utils::show_error(int connfd, const char *info)
 
 int *Utils::u_pipefd = 0;
 Epoll Utils::epoll;
+int Utils::epfd = 0;
 
 class Utils;
 void cb_func(client_data *data){

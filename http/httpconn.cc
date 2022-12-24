@@ -43,7 +43,7 @@ void HttpConn::close_conn(bool real_close){
 void HttpConn::init(int sockfd, InetAddress addr, char* root, int TRIGMode, int close_log, std::string user, std::string password, std::string dataBaseName){
     fd_=sockfd;
     addr_ = addr;
-
+    epoll.setEpfd(epfd_);
     epoll.addFd(fd_, true, TRIGMode_);
     user_count_++;
 
@@ -71,7 +71,7 @@ void HttpConn::init(){
     checked_idx_ = 0;
     cgi_ = 0;
     state_ = 0;
-    timer_falg = 0;
+    timer_flag = 0;
     improv = 0;
     memset(read_buf_, '\0', READ_BUFFER_SIZE);
     memset(write_buf_, '\0', WRITE_BUFFER_SIZE);

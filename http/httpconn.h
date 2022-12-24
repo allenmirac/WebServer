@@ -74,7 +74,7 @@ public:
         return addr_.getAddr();
     };
     void init_mysql_result(ConnPool *connPool);
-    int timer_falg;
+    int timer_flag;
     int improv;
 
 private:
@@ -98,7 +98,7 @@ private:
     bool add_blank_line();
 
 public:
-    static int epoll_fd_;
+    static int epfd_;
     static int user_count_;
     sql::Connection *mysql;
     int state_;
