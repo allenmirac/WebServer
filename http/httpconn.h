@@ -8,7 +8,7 @@
 #ifndef WEBSERVER_HTTPCONN_H
 #define WEBSERVER_HTTPCONN_H
 
-#include "../InetAddress/InetAddress.h"
+#include "../InetAddress/inetaddress.h"
 #include "../CGImysql/connpool.h"
 #include "../Epoll/epoll.h"
 #include <netinet/in.h>
