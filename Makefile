@@ -10,7 +10,7 @@ else
 endif
 
 servers: main.cc  ./timer/lst_timer.cc ./http/httpconn.cc ./log/log.cc ./CGImysql/connpool.cc  webserver.cc Epoll/epoll.cc InetAddress/inetaddress.cc util/util.cc threadpool/threadpool.cc config.cc        
-		$(CXX) -o servers  $^ $(CXXFLAGS) -lpthread -I/usr/include/cppconn
+		$(CXX) -o servers  $^ $(CXXFLAGS) -lpthread -I/usr/include/cppconn -lmysqlcppconn
 
 clean:
 	rm  -r servers
