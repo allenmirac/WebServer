@@ -14,7 +14,7 @@ ThreadPool<T>::ThreadPool(int actor_model, ConnPool*connPool, int thread_number,
     }
     m_threads = new pthread_t[m_thread_number];
     if(!m_threads){
-        throw std::exception;
+        throw std::exception();
     }
     for(int i=0; i<thread_number; i++){
         if(pthread_create(m_threads + i, NULL, worker, this) != 0){
@@ -22,7 +22,7 @@ ThreadPool<T>::ThreadPool(int actor_model, ConnPool*connPool, int thread_number,
         }
         if(pthread_detach(m_threads[i])){
             delete[] m_threads;
-            throw std::exception;
+            throw std::exception();
         }
     }
 }
@@ -103,7 +103,7 @@ void ThreadPool<T>::run(){
 
 template <typename T>
 void *ThreadPool<T>::worker(void*arg){
-    ThreadPool *pool = std::static_cast<ThreadPool *> arg;
+    ThreadPool *pool = static_cast<ThreadPool *> (arg);
     pool->run();
     return pool;
 }

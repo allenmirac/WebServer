@@ -15,6 +15,7 @@
 #include <time.h>
 #include <cstring>
 #include <assert.h>
+#include <signal.h>
 
 namespace webserver
 {

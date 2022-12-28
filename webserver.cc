@@ -23,7 +23,6 @@ WebServer::~WebServer(){
     close(pipefd_[1]);
     delete[] users_;
     delete[] users_timer;
-    delete pool_;
 }
 
 void WebServer::init(int port, std::string user, std::string passWord, std::string databaseName, int log_write, 

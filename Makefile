@@ -9,8 +9,8 @@ else
 
 endif
 
-server: main.cc  ./timer/lst_timer.cc ./http/httpconn.cc ./log/log.cc ./CGImysql/connpool.cc  webserver.cc config.cc
-	$(CXX) -o server  $^ $(CXXFLAGS) -lpthread
+servers: main.cc  ./timer/lst_timer.cc ./http/httpconn.cc ./log/log.cc ./CGImysql/connpool.cc  webserver.cc Epoll/epoll.cc InetAddress/inetaddress.cc util/util.cc threadpool/threadpool.cc config.cc        
+		$(CXX) -o servers  $^ $(CXXFLAGS) -lpthread -I/usr/include/cppconn
 
 clean:
 	rm  -r servers

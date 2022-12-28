@@ -11,6 +11,8 @@ const char *error_404_title = "Not Found";
 const char *error_404_form = "The requested file was not found on this server.\n";
 const char *error_500_title = "Internal Error";
 const char *error_500_form = "There was an unusual problem serving the request file.\n";
+int HttpConn::epfd_ = -1;
+int HttpConn::user_count_ = 0;
 
 void HttpConn::init_mysql_result(ConnPool *connPool){
     sql::Connection *con = connPool->GetConnection();
@@ -441,6 +443,10 @@ bool HttpConn::add_status_line(int status, const char *title){
 bool HttpConn::add_headers(int content_len){
     return add_content_length(content_len) && add_linger()
         && add_blank_line();
+}
+bool HttpConn::add_content_length(int content_len)
+{
+    return add_response("Content-Length:%d\r\n", content_len);
 }
 bool HttpConn::add_content_type(){
     return add_response("Content-Type:%s\r\n", "text/html");
