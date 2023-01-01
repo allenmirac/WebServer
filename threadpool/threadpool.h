@@ -79,7 +79,7 @@ bool ThreadPool<T>::append(T *request, int state){
         m_queuelocker.unlock();
         return false;
     }
-    request->m_state = state;
+    request->state_ = state;
     m_workqueue.push_back(request);
     m_queuelocker.unlock();
     m_queuestat.post();
@@ -115,20 +115,20 @@ void ThreadPool<T>::run(){
         m_queuelocker.unlock();
         printf("%d\n", m_actor_model);
         if(1==m_actor_model){
-            if(0 == request->m_state){
+            if(0 == request->state_){
                 if(request->read_once()){
                     request->improv = 1;
                     connectionRAII mysqlconn(&request->mysql, m_connPool);
                 } else {
                     request->improv = 1;
-                    request->time_flag=1;
+                    request->timer_flag=1;
                 }
             } else {
                 if(request->write()){
                     request->improv=1;
                 } else {
                     request->improv=1;
-                    request->time_flag=1;
+                    request->timer_flag=1;
 
                 }
             }
