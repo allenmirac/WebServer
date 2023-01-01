@@ -101,48 +101,48 @@ bool ThreadPool<T>::append_p(T *request){
 
 template <typename T>
 void ThreadPool<T>::run(){
-    // while(true){
+    while(true){
         m_queuestat.wait();
         m_queuelocker.lock();
 
         if(m_workqueue.empty()){
             m_queuelocker.unlock();
-            // continue;
+            continue;
         }
-
+        // printf("hahaha\n");
         T * request = m_workqueue.front();
         m_workqueue.pop_front();
         m_queuelocker.unlock();
         printf("%d\n", m_actor_model);
         if(1==m_actor_model){
-            // if(0 == request->m_state){
-            //     if(request->read_once()){
-            //         request->improv = 1;
-            //         connectionRAII mysqlconn(&request->mysql, m_connPool);
-            //     } else {
-            //         request->improv = 1;
-            //         request->time_flag=1;
-            //     }
-            // } else {
-            //     if(request->write()){
-            //         request->improv=1;
-            //     } else {
-            //         request->improv=1;
-            //         request->time_flag=1;
+            if(0 == request->m_state){
+                if(request->read_once()){
+                    request->improv = 1;
+                    connectionRAII mysqlconn(&request->mysql, m_connPool);
+                } else {
+                    request->improv = 1;
+                    request->time_flag=1;
+                }
+            } else {
+                if(request->write()){
+                    request->improv=1;
+                } else {
+                    request->improv=1;
+                    request->time_flag=1;
 
-            //     }
-            // }
-        }
-        else {
-            // connectionRAII mysqlconn(&request->mysql, m_connPool);
-            // request->process();
-            sql::Connection *conn = m_connPool->GetConnection();
-            if(conn!=nullptr){
-                printf("quchulaile");
-                printf(" %d\n", *request);
+                }
             }
         }
-    // }
+        else {
+            connectionRAII mysqlconn(&request->mysql, m_connPool);
+            request->process();
+            // sql::Connection *conn = m_connPool->GetConnection();
+            // if(conn!=nullptr){
+            //     printf("quchulaile");
+            //     printf(" %d\n", *request);
+            // }
+        }
+    }
 }
 
 template <typename T>
