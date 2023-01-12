@@ -20,9 +20,11 @@ void HttpConn::init_mysql_result(ConnPool *connPool){
     std::string sql = "select name,password from user";
     sql::Statement *stat = mysql->createStatement();
     sql::ResultSet *rs = stat->executeQuery(sql);
-    if(rs->getFetchSize()==0){
+    rs->last();
+    if(rs->getRow()==0){
         LOG_ERROR("select error:%s\n");
     }
+    rs->beforeFirst();
     while(rs->next()){
         std::string name = rs->getString(1);
         std::string password = rs->getString(2);

@@ -4,7 +4,7 @@ namespace webserver
 {
 
 WebServer::WebServer(){
-    users_ = new HttpConn[MAX_FD];
+    users_ = new HttpConn[MAX_FD/1000];//epoll_create1 failed: Too many open files
 
     char server_path[200];
     getcwd(server_path, 200);
@@ -17,7 +17,6 @@ WebServer::WebServer(){
 }
 
 WebServer::~WebServer(){
-    close(epoll_->getEpfd());
     close(listenfd_);
     close(pipefd_[0]);
     close(pipefd_[1]);
@@ -113,17 +112,17 @@ void WebServer::eventListen()
     }
 
     int ret = 0;
-    // struct sockaddr_in address;
-    // bzero(&address, sizeof(address));
-    // address.sin_family = AF_INET;
-    // address.sin_addr.s_addr = htonl(INADDR_ANY);
-    // address.sin_port = htons(port);
-    InetAddress addr(INADDR_ANY, port_);
+    struct sockaddr_in address;
+    bzero(&address, sizeof(address));
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = htonl(INADDR_ANY);
+    address.sin_port = htons(port_);
+    // InetAddress addr("127.0.0.1", port_);////服务器ip地址, 端口
 
     int flag = 1;
     setsockopt(listenfd_, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
-    sockaddr_in address = addr.getAddr();
-    ret = bind(listenfd_, (struct sockaddr *)&address, sizeof(addr.getAddr_len()));
+    // sockaddr_in address = addr.getAddr();
+    ret = bind(listenfd_, (struct sockaddr *)&address, sizeof(address));
     assert(ret >= 0);
     ret = listen(listenfd_, 5);
     assert(ret >= 0);
@@ -133,8 +132,6 @@ void WebServer::eventListen()
     //epoll创建内核事件表
     epoll_event events[MAX_EVENT_NUMBER];
     epfd = epoll_create(5);
-    epoll_->setEpfd(epfd);
-    epoll_->setEvent(events);
     assert(epfd != -1);
 
     utils.addFd(listenfd_, false, LISTENTrigmode_);

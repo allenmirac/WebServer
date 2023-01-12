@@ -44,7 +44,6 @@ public:
     int actormodel_;
 
     int pipefd_[2];
-    Epoll *epoll_;
     int epfd;
     HttpConn *users_;
 
