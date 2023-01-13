@@ -356,10 +356,10 @@ HttpConn::HTTP_CODE HttpConn::do_request()
     if (stat(real_file_, &file_stat_) < 0)
         return NO_RESOURCE;
 
-    if (!(file_stat_.st_mode & S_IROTH))
+    if (!(file_stat_.st_mode & S_IROTH)) // 其他组读权限
         return FORBIDDEN_REQUEST;
 
-    if (S_ISDIR(file_stat_.st_mode))
+    if (S_ISDIR(file_stat_.st_mode)) // Test for a directory.
         return BAD_REQUEST;
 
     int fd = open(real_file_, O_RDONLY);
