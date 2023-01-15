@@ -10,7 +10,8 @@
 
 #include "../InetAddress/inetaddress.h"
 #include "../CGImysql/connpool.h"
-#include "../Epoll/epoll.h"
+#include <sys/epoll.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
@@ -105,7 +106,6 @@ public:
 
 private:
     int fd_;
-    Epoll epoll;
     InetAddress addr_;
     char read_buf_[READ_BUFFER_SIZE];
     char write_buf_[WRITE_BUFFER_SIZE];

@@ -14,6 +14,53 @@ const char *error_500_form = "There was an unusual problem serving the request f
 int HttpConn::epfd_ = -1;
 int HttpConn::user_count_ = 0;
 
+//对文件描述符设置非阻塞
+int setnonblocking(int fd)
+{
+    int old_option = fcntl(fd, F_GETFL);
+    int new_option = old_option | O_NONBLOCK;
+    fcntl(fd, F_SETFL, new_option);
+    return old_option;
+}
+
+//将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT
+void addFd(int epollfd, int fd, bool one_shot, int TRIGMode)
+{
+    epoll_event event;
+    event.data.fd = fd;
+
+    if (1 == TRIGMode)
+        event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;
+    else
+        event.events = EPOLLIN | EPOLLRDHUP;
+
+    if (one_shot)
+        event.events |= EPOLLONESHOT;
+    epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event);
+    setnonblocking(fd);
+}
+
+//从内核时间表删除描述符
+void removeFd(int epollfd, int fd)
+{
+    epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, 0);
+    close(fd);
+}
+
+//将事件重置为EPOLLONESHOT
+void modifyFd(int epollfd, int fd, int ev, int TRIGMode)
+{
+    epoll_event event;
+    event.data.fd = fd;
+
+    if (1 == TRIGMode)
+        event.events = ev | EPOLLET | EPOLLONESHOT | EPOLLRDHUP;
+    else
+        event.events = ev | EPOLLONESHOT | EPOLLRDHUP;
+
+    epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &event);
+}
+
 void HttpConn::init_mysql_result(ConnPool *connPool){
     sql::Connection *con = connPool->GetConnection();
     connectionRAII mysqlcon(&mysql, connPool);
@@ -38,7 +85,7 @@ void HttpConn::init_mysql_result(ConnPool *connPool){
 void HttpConn::close_conn(bool real_close){
     if(real_close && (fd_!=-1)){
         printf("close fd=%d", fd_);
-        epoll.removeFd(fd_);
+        removeFd(epfd_, fd_);
         user_count_--;
         fd_=-1;
     }
@@ -47,8 +94,7 @@ void HttpConn::close_conn(bool real_close){
 void HttpConn::init(int sockfd, InetAddress addr, char* root, int TRIGMode, int close_log, std::string user, std::string password, std::string dataBaseName){
     fd_=sockfd;
     addr_ = addr;
-    epoll.setEpfd(epfd_);
-    epoll.addFd(fd_, true, TRIGMode_);
+    addFd(epfd_, true, true, TRIGMode_);
     user_count_++;
 
     doc_root_ = root;
@@ -380,7 +426,7 @@ bool HttpConn::write()
     int temp = 0;
 
     if (bytes_to_send == 0){
-        epoll.modifyFd(fd_, EPOLLIN, TRIGMode_);
+        modifyFd(epfd_, EPOLLIN, true, TRIGMode_);
         init();
         return true;
     }
@@ -390,7 +436,7 @@ bool HttpConn::write()
 
         if (temp < 0){
             if (errno == EAGAIN){
-                epoll.modifyFd(fd_, EPOLLOUT, TRIGMode_);
+                modifyFd(epfd_, fd_, EPOLLOUT, TRIGMode_);
                 return true;
             }
             unmap();
@@ -410,7 +456,7 @@ bool HttpConn::write()
 
         if (bytes_to_send <= 0){
             unmap();
-            epoll.modifyFd(fd_, EPOLLIN, TRIGMode_);
+            modifyFd(epfd_, fd_, EPOLLIN, TRIGMode_);
 
             if (linger_){
                 init();
@@ -529,7 +575,7 @@ void HttpConn::process()
     HTTP_CODE read_ret = process_read();
     if (read_ret == NO_REQUEST)
     {
-        epoll.modifyFd(fd_, EPOLLIN, TRIGMode_);
+        modifyFd(epfd_, fd_, EPOLLIN, TRIGMode_);
         return;
     }
     bool write_ret = process_write(read_ret);
@@ -537,6 +583,6 @@ void HttpConn::process()
     {
         close_conn();
     }
-    epoll.modifyFd(fd_, EPOLLOUT, TRIGMode_);
+    modifyFd(epfd_, fd_, EPOLLOUT, TRIGMode_);
 }
 } // namespace webserver

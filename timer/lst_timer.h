@@ -8,8 +8,9 @@
 #ifndef WEBSERVER_LSTTIMER_H
 #define WEBSERVER_LSTTIMER_H
 
-#include "../Epoll/epoll.h"
 #include "../http/httpconn.h"
+#include <sys/epoll.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <arpa/inet.h>
 #include <time.h>
@@ -65,7 +66,6 @@ public:
 public:
     static int *u_pipefd;
     SortTimerLst timer_lst_;
-    static Epoll epoll;
     static int epfd;
     int TIMESLOT_;
 };

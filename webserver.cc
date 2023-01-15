@@ -8,11 +8,12 @@ WebServer::WebServer(){
 
     char server_path[200];
     getcwd(server_path, 200);
-    char root[6]="/root";
+    char root[10]="/resource";
     root_ = (char *)malloc(strlen(server_path)+strlen(root)+1);
     strcpy(root_, server_path);
     strcat(root_, root);
-
+    std::cout<<root_<<std::endl;
+    //定时器
     users_timer = new client_data[MAX_FD];
 }
 
@@ -96,17 +97,15 @@ void WebServer::thread_pool()
 void WebServer::eventListen()
 {
     //网络编程基础步骤
-    listenfd_ = socket(PF_INET, SOCK_STREAM, 0);
+    listenfd_ = socket(AF_INET, SOCK_STREAM, 0);
     assert(listenfd_ >= 0);
 
-    //优雅关闭连接
+    //优雅关闭连接:https://www.cnblogs.com/caosiyang/archive/2012/03/29/2422956.html
     if (0 == OPT_LINGER_)
     {
         struct linger tmp = {0, 1};
         setsockopt(listenfd_, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
-    }
-    else if (1 == OPT_LINGER_)
-    {
+    }else if (1 == OPT_LINGER_){
         struct linger tmp = {1, 1};
         setsockopt(listenfd_, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
     }
@@ -293,6 +292,7 @@ void WebServer::dealwithread(int sockfd)
             }
         }else{
             deal_timer(timer, sockfd);
+            std::cout<<"read_once failed"<<std::endl;
         }
     }
 }
@@ -338,7 +338,9 @@ void WebServer::eventLoop()
     bool stop_server = false;
 
     while (!stop_server){
+        std::cout<<"Epoll_wait:"<<std::endl;
         int number = epoll_wait(epfd, events, MAX_EVENT_NUMBER, -1);
+        std::cout<<"Epoll_wait number=:"<<number<<std::endl;
         if (number < 0 && errno != EINTR){
             LOG_ERROR("%s", "epoll failure");
             break;
@@ -350,6 +352,7 @@ void WebServer::eventLoop()
 
             //处理新到的客户连接
             if (sockfd == listenfd_){
+                std::cout<<"sockfd == listenfd_"<<std::endl;
                 bool flag = dealclientdata();
                 if (false == flag)
                     continue;

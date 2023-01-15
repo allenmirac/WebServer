@@ -151,8 +151,7 @@ void Utils::addFd(int fd, bool one_shot, int TRIGMode)
     if (one_shot)
         event.events |= EPOLLONESHOT;
 
-    epoll.setEvent(&event);
-    epoll.addFd(fd, one_shot, TRIGMode);
+    epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
     setnonblocking(fd);
 }
 void Utils::sig_handler(int sig)
@@ -187,12 +186,11 @@ void Utils::show_error(int connfd, const char *info)
 }
 
 int *Utils::u_pipefd = 0;
-Epoll Utils::epoll;
 int Utils::epfd = 0;
 
 class Utils;
 void cb_func(client_data *data){
-    Utils::epoll.removeFd(data->sockfd);
+    epoll_ctl(Utils::epfd, EPOLL_CTL_DEL, data->sockfd, 0);
     assert(data);
     close(data->sockfd);
     HttpConn::user_count_--;
