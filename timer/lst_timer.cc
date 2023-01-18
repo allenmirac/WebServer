@@ -138,7 +138,7 @@ int Utils::setnonblocking(int fd)
     return old_option;
 }
 
-void Utils::addFd(int fd, bool one_shot, int TRIGMode)
+void Utils::addFd(int epfd, int fd, bool one_shot, int TRIGMode)
 {
     epoll_event event;
     event.data.fd = fd;
@@ -170,7 +170,7 @@ void Utils::addsig(int sig, void(handler)(int), bool restart)
     sa.sa_handler = handler;
     if (restart)
         sa.sa_flags |= SA_RESTART;
-    sigfillset(&sa.sa_mask);
+    sigfillset(&sa.sa_mask);//调用该函数后，set指向的信号集中将包含linux支持的64种信号，相当于64为都置1；
     assert(sigaction(sig, &sa, NULL) != -1);
 }
 void Utils::timer_handler()

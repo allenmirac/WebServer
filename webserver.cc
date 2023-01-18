@@ -131,16 +131,23 @@ void WebServer::eventListen()
     //epoll创建内核事件表
     epoll_event events[MAX_EVENT_NUMBER];
     epfd = epoll_create(5);
+    // struct epoll_event ev;
+    // ev.data.fd = listenfd_;
+    // ev.events = EPOLLIN;
+    // epoll_ctl(epfd, EPOLL_CTL_ADD, listenfd_, &ev);
     assert(epfd != -1);
 
-    utils.addFd(listenfd_, false, LISTENTrigmode_);
+    
+
+    utils.addFd(epfd, listenfd_, false, LISTENTrigmode_);
     HttpConn::epfd_ = epfd;
 
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd_);//pipefd_[0],pipefd_[1],这对套接字可以用于全双工通信.
     assert(ret != -1);
     utils.setnonblocking(pipefd_[1]);
-    utils.addFd(pipefd_[0], false, 0);
+    utils.addFd(epfd, pipefd_[0], false, 0);
 
+    //添加信号处理
     utils.addsig(SIGPIPE, SIG_IGN);
     utils.addsig(SIGALRM, utils.sig_handler, false);
     utils.addsig(SIGTERM, utils.sig_handler, false);
@@ -199,6 +206,9 @@ bool WebServer::dealclientdata()
             LOG_ERROR("%s:errno is:%d", "accept error", errno);
             return false;
         }
+        // else{
+        //     std::cout<<"dealclientdata accpet succeed"<<std::endl;
+        // }
         if (HttpConn::user_count_ >= MAX_FD){
             utils.show_error(connfd, "Internal server busy");
             LOG_ERROR("%s", "Internal server busy");

@@ -61,7 +61,7 @@ public:
     void addsig(int sig, void(handler)(int), bool restart=true);
     void timer_handler();
     void show_error(int connfd, const char *info);
-    void addFd(int fd, bool one_shot, int TRIGMode);
+    void addFd(int epfd, int fd, bool one_shot, int TRIGMode);
     static void sig_handler(int sig);
 public:
     static int *u_pipefd;
