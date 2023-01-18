@@ -136,7 +136,7 @@ void WebServer::eventListen()
     utils.addFd(listenfd_, false, LISTENTrigmode_);
     HttpConn::epfd_ = epfd;
 
-    ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd_);
+    ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd_);//pipefd_[0],pipefd_[1],这对套接字可以用于全双工通信.
     assert(ret != -1);
     utils.setnonblocking(pipefd_[1]);
     utils.addFd(pipefd_[0], false, 0);
