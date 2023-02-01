@@ -243,19 +243,24 @@ bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
     char signals[1024];
     ret = recv(pipefd_[0], signals, sizeof(signals), 0);
     if (ret == -1){
+        std::cout<<"ret == -1"<<std::endl;
         return false;
     }else if (ret == 0) {
+        std::cout<<"ret == 0"<<std::endl;
         return false;
     }else {
+        // std::cout<<"ret != 0,-1"<<std::endl;
         for (int i = 0; i < ret; ++i){
             switch (signals[i])
             {
             case SIGALRM:{
                 timeout = true;
+                // std::cout<<"timeout = true;"<<std::endl;
                 break;
             }
             case SIGTERM:{
                 stop_server = true;
+                std::cout<<"stop_server = true;"<<std::endl;
                 break;
             }
             }
@@ -348,9 +353,9 @@ void WebServer::eventLoop()
     bool stop_server = false;
 
     while (!stop_server){
-        std::cout<<"Epoll_wait:"<<std::endl;
+        // std::cout<<"Epoll_wait:"<<std::endl;
         int number = epoll_wait(epfd, events, MAX_EVENT_NUMBER, -1);
-        std::cout<<"Epoll_wait number=:"<<number<<std::endl;
+        // std::cout<<"Epoll_wait number=:"<<number<<std::endl;
         if (number < 0 && errno != EINTR){
             LOG_ERROR("%s", "epoll failure");
             break;
@@ -364,26 +369,34 @@ void WebServer::eventLoop()
             if (sockfd == listenfd_){
                 std::cout<<"sockfd == listenfd_"<<std::endl;
                 bool flag = dealclientdata();
+                std::cout<<"flag= "<<flag<<", i= "<<i<<std::endl;
                 if (false == flag)
                     continue;
             }else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)){
+                std::cout<<"client close"<<std::endl;
                 //服务器端关闭连接，移除对应的定时器
                 UtilTimer *timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);
             }
             //处理信号
             else if ((sockfd == pipefd_[0]) && (events[i].events & EPOLLIN)){
+                std::cout<<"Dealwithsignal"<<std::endl;
                 bool flag = dealwithsignal(timeout, stop_server);
+                // std::cout<<"flag= "<<flag<<", i= "<<i<<std::endl;
                 if (false == flag)
                     LOG_ERROR("%s", "dealclientdata failure");
             }
             //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN){
+                std::cout<<"Epollin"<<std::endl;
                 dealwithread(sockfd);
             }else if (events[i].events & EPOLLOUT){
+                std::cout<<"Epollout"<<std::endl;
                 dealwithwrite(sockfd);
             }
+            std::cout<<"i= "<<i<<std::endl;
         }
+        std::cout<<"timeout= "<<timeout<<std::endl;
         if (timeout){
             utils.timer_handler();
 
