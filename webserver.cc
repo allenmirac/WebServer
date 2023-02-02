@@ -378,14 +378,7 @@ void WebServer::eventLoop()
                 UtilTimer *timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);
             }
-            //处理信号
-            else if ((sockfd == pipefd_[0]) && (events[i].events & EPOLLIN)){
-                std::cout<<"Dealwithsignal"<<std::endl;
-                bool flag = dealwithsignal(timeout, stop_server);
-                // std::cout<<"flag= "<<flag<<", i= "<<i<<std::endl;
-                if (false == flag)
-                    LOG_ERROR("%s", "dealclientdata failure");
-            }
+            
             //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN){
                 std::cout<<"Epollin"<<std::endl;
@@ -393,6 +386,14 @@ void WebServer::eventLoop()
             }else if (events[i].events & EPOLLOUT){
                 std::cout<<"Epollout"<<std::endl;
                 dealwithwrite(sockfd);
+            }
+            //处理信号
+            else if ((sockfd == pipefd_[0]) && (events[i].events & EPOLLIN)){
+                std::cout<<"Dealwithsignal"<<std::endl;
+                bool flag = dealwithsignal(timeout, stop_server);
+                // std::cout<<"flag= "<<flag<<", i= "<<i<<std::endl;
+                if (false == flag)
+                    LOG_ERROR("%s", "dealclientdata failure");
             }
             std::cout<<"i= "<<i<<std::endl;
         }
