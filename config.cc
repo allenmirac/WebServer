@@ -2,7 +2,7 @@
 
 Config::Config(){
     //端口号,默认9006
-    PORT = 9006;
+    PORT = 9007;
 
     //日志写入方式，默认同步
     LOGWrite = 0;

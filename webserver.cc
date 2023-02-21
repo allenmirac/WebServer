@@ -145,7 +145,7 @@ void WebServer::eventListen()
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd_);//pipefd_[0],pipefd_[1],这对套接字可以用于全双工通信.
     assert(ret != -1);
     utils.setnonblocking(pipefd_[1]);
-    utils.addFd(epfd, pipefd_[0], false, 0);
+    // utils.addFd(epfd, pipefd_[0], false, 0);
 
     //添加信号处理
     utils.addsig(SIGPIPE, SIG_IGN);
@@ -355,7 +355,7 @@ void WebServer::eventLoop()
     while (!stop_server){
         // std::cout<<"Epoll_wait:"<<std::endl;
         int number = epoll_wait(epfd, events, MAX_EVENT_NUMBER, -1);
-        // std::cout<<"Epoll_wait number=:"<<number<<std::endl;
+        std::cout<<"Epoll_wait number=:"<<number<<std::endl;
         if (number < 0 && errno != EINTR){
             LOG_ERROR("%s", "epoll failure");
             break;
