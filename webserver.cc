@@ -116,6 +116,7 @@ void WebServer::eventListen()
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_ANY);
     address.sin_port = htons(port_);
+    std::cout<<port_<<std::endl;
     // InetAddress addr("127.0.0.1", port_);////服务器ip地址, 端口
 
     int flag = 1;
@@ -353,12 +354,15 @@ void WebServer::eventLoop()
     bool stop_server = false;
 
     while (!stop_server){
-        // std::cout<<"Epoll_wait:"<<std::endl;
+        std::cout<<"Epoll_wait:"<<std::endl;
         int number = epoll_wait(epfd, events, MAX_EVENT_NUMBER, -1);
         std::cout<<"Epoll_wait number=:"<<number<<std::endl;
         if (number < 0 && errno != EINTR){
+            std::cout<<"number<0"<<std::endl;
             LOG_ERROR("%s", "epoll failure");
             break;
+        }else if(number<0 && errno == EINTR){
+            std::cout<<"number<0 and errno=EINTR"<<std::endl;
         }
 
         for (int i = 0; i < number; i++)
@@ -369,7 +373,7 @@ void WebServer::eventLoop()
             if (sockfd == listenfd_){
                 std::cout<<"sockfd == listenfd_"<<std::endl;
                 bool flag = dealclientdata();
-                std::cout<<"flag= "<<flag<<", i= "<<i<<std::endl;
+                // std::cout<<"flag= "<<flag<<", i= "<<i<<std::endl;
                 if (false == flag)
                     continue;
             }else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)){
