@@ -109,9 +109,9 @@ private:
     sockaddr_in addr_;
     char read_buf_[READ_BUFFER_SIZE];
     char write_buf_[WRITE_BUFFER_SIZE];
-    int read_idx_;
-    int write_idx_;
-    int checked_idx_;
+    int read_idx_;//read index in the message
+    int write_idx_;// write index in the message
+    int checked_idx_;// cursor
     int start_line_;
     CHECK_STATE check_state_;
     METHOD method_;

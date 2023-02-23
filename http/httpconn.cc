@@ -130,6 +130,7 @@ void HttpConn::init(){
 
 HttpConn::LINE_STATUS HttpConn::parse_line(){
     char temp;
+    // std::cout<<"HttpConn::parse_line check_idx_: "<<checked_idx_<<std::endl;//0
     for(; checked_idx_ < read_idx_; ++checked_idx_){
         temp = read_buf_[checked_idx_];
         if(temp == '\r'){
@@ -138,6 +139,7 @@ HttpConn::LINE_STATUS HttpConn::parse_line(){
             } else if(read_buf_[checked_idx_+1] == '\n'){
                 read_buf_[checked_idx_++] = '\0';
                 read_buf_[checked_idx_] = '\0';
+                // std::cout<<"HttpConn::parse_line return LINE_OK"<<std::endl;
                 return LINE_OK;
             }
             return LINE_BAD;
@@ -150,6 +152,7 @@ HttpConn::LINE_STATUS HttpConn::parse_line(){
             return LINE_BAD;
         }
     }
+    // std::cout<<"HttpConn::parse_line return"<<std::endl;
     return LINE_OPEN;
 }
 
@@ -162,6 +165,8 @@ bool HttpConn::read_once(){
     // LT
     if(0 == TRIGMode_){
         bytes_read = recv(fd_, read_buf_ + read_idx_, READ_BUFFER_SIZE-read_idx_, 0);
+        read_idx_ += bytes_read;
+        // std::cout<<"HttpConn::read_once read_idx_ :"<<read_idx_<<std::endl;//0
         // std::cout<<"HttpConn::read_once bytes_read :"<<bytes_read<<std::endl;
         if(bytes_read<=0){
             return false;
@@ -185,13 +190,16 @@ bool HttpConn::read_once(){
 }
 
 HttpConn::HTTP_CODE HttpConn::parse_request_line(char *text){
+    // std::cout<<"HttpConn::parse_request_line text="<<text<<std::endl;
     // https://cplusplus.com/reference/cstring/strpbrk/
     url_ = strpbrk(text, " \t");
+    // std::cout<<"HttpConn::parse_request_line url_="<<url_<<std::endl;
     if(!url_){
         return BAD_REQUEST;
     }
     *url_ ++='\0';
     char *method = text;
+    // std::cout<<"HttpConn::parse_request_line method="<<method<<std::endl;
     if(strcasecmp(method, "GET") == 0){
         method_ = GET;
     } else if(strcasecmp(method, "POST") == 0){
@@ -201,8 +209,14 @@ HttpConn::HTTP_CODE HttpConn::parse_request_line(char *text){
         return BAD_REQUEST;
     }
     url_ +=strspn(url_, " \t");
-    version_ +=strspn(version_, " \t");
-
+    version_ =strpbrk(url_, " \t");
+    // std::cout<<"HttpConn::parse_request_line method="<<method<<std::endl;
+    // std::cout<<"HttpConn::parse_request_line version="<<version_<<std::endl;
+    // std::cout<<"HttpConn::parse_request_line url_="<<url_<<std::endl;
+    if (!version_)
+        return BAD_REQUEST;
+    *version_ ++ = '\0';
+    version_ += strspn(version_, " \t");
     if(strcasecmp(version_, "HTTP/1.1")!=0){
         return BAD_REQUEST;
     }
@@ -266,14 +280,16 @@ HttpConn::HTTP_CODE HttpConn::process_read(){
     LINE_STATUS line_status = LINE_OK;
     HTTP_CODE ret = NO_REQUEST;
     char *text =nullptr;
-    std::cout<<"HttpConn::process_read check_state_:"<<check_state_<<std::endl;
-    while((check_state_ == CHECK_STATE_CONTENT && line_status == LINE_OK)){
+    line_status = parse_line();
+    // std::cout<<"HttpConn::process_read check_state_:"<<check_state_<<", HttpConn::process_read line_status:"<<line_status<<std::endl;
+    while((check_state_ == CHECK_STATE_CONTENT && line_status == LINE_OK) || (line_status  == LINE_OK)){
         text = get_line();
         start_line_ = checked_idx_;
         LOG_INFO("%s", text);
         switch (check_state_)
         {
         case CHECK_STATE_REQUESTLINE:{
+            // std::cout<<"check_state_ == CHECK_STATE_REQUESTLINE"<<std::endl;
             ret = parse_request_line(text);
             if(ret == BAD_REQUEST){
                 return BAD_REQUEST;
@@ -425,7 +441,7 @@ void HttpConn::unmap(){
 bool HttpConn::write()
 {
     int temp = 0;
-
+    std::cout<<"HttpConn::write bytes_to_send="<<bytes_to_send<<std::endl;
     if (bytes_to_send == 0){
         modifyFd(epfd_, EPOLLIN, true, TRIGMode_);
         init();
@@ -581,6 +597,7 @@ void HttpConn::process()
         return;
     }
     bool write_ret = process_write(read_ret);
+    // std::cout<<"HttpConn process write_ret:"<<write_ret<<std::endl;
     if (!write_ret)
     {
         close_conn();

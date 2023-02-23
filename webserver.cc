@@ -307,7 +307,7 @@ void WebServer::dealwithread(int sockfd)
             }
         }else{
             deal_timer(timer, sockfd);
-            std::cout<<"read_once failed"<<std::endl;
+            // std::cout<<"read_once failed"<<std::endl;
         }
     }
 }
@@ -355,7 +355,7 @@ void WebServer::eventLoop()
     while (!stop_server){
         // std::cout<<"Epoll_wait:"<<std::endl;
         int number = epoll_wait(epfd, events, MAX_EVENT_NUMBER, -1);
-        std::cout<<"Epoll_wait number=:"<<number<<std::endl;
+        // std::cout<<"Epoll_wait number=:"<<number<<std::endl;
         if (number < 0 && errno != EINTR){
             std::cout<<"number<0"<<std::endl;
             LOG_ERROR("%s", "epoll failure");
@@ -374,7 +374,6 @@ void WebServer::eventLoop()
             if (sockfd == listenfd_){
                 // std::cout<<"sockfd == listenfd_"<<std::endl;
                 bool flag = dealclientdata();
-                // std::cout<<"flag= "<<flag<<", i= "<<i<<std::endl;
                 if (false == flag)
                     continue;
             }else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)){
@@ -387,20 +386,17 @@ void WebServer::eventLoop()
             else if ((sockfd == pipefd_[0]) && (events[i].events & EPOLLIN)){
                 // std::cout<<"Dealwithsignal"<<std::endl;
                 bool flag = dealwithsignal(timeout, stop_server);
-                // std::cout<<"flag= "<<flag<<", i= "<<i<<std::endl;
                 if (false == flag)
                     LOG_ERROR("%s", "dealclientdata failure");
             }
             //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN){
-                std::cout<<"Epollin"<<std::endl;
+                // std::cout<<"Epollin"<<std::endl;
                 dealwithread(sockfd);
             }else if (events[i].events & EPOLLOUT){
                 std::cout<<"Epollout"<<std::endl;
                 dealwithwrite(sockfd);
             }
-            
-            // std::cout<<"i= "<<i<<std::endl;
         }
         // std::cout<<"timeout= "<<timeout<<std::endl;
         if (timeout){
