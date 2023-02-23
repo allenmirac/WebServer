@@ -27,7 +27,7 @@ public:
     void trig_mode();
     void eventListen();
     void eventLoop();
-    void timer(int connfd, InetAddress client_addr);
+    void timer(int connfd, sockaddr_in client_addr);
     void adjust_timer(UtilTimer *timer);
     void deal_timer(UtilTimer *timer, int sockfd);
     bool dealclientdata();

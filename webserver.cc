@@ -116,7 +116,7 @@ void WebServer::eventListen()
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_ANY);
     address.sin_port = htons(port_);
-    std::cout<<port_<<std::endl;
+    // std::cout<<port_<<std::endl;
     // InetAddress addr("127.0.0.1", port_);////服务器ip地址, 端口
 
     int flag = 1;
@@ -127,7 +127,7 @@ void WebServer::eventListen()
     ret = listen(listenfd_, 5);
     assert(ret >= 0);
 
-    utils.init(TIMESLOT);
+    utils.init(TIMESLOT+5);// every 10 seconds tick()
 
     //epoll创建内核事件表
     epoll_event events[MAX_EVENT_NUMBER];
@@ -146,7 +146,7 @@ void WebServer::eventListen()
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd_);//pipefd_[0],pipefd_[1],这对套接字可以用于全双工通信.
     assert(ret != -1);
     utils.setnonblocking(pipefd_[1]);
-    // utils.addFd(epfd, pipefd_[0], false, 0);
+    utils.addFd(epfd, pipefd_[0], false, 0);
 
     //添加信号处理
     utils.addsig(SIGPIPE, SIG_IGN);
@@ -160,19 +160,19 @@ void WebServer::eventListen()
     Utils::epfd = epfd;
 }
 
-void WebServer::timer(int connfd, InetAddress client_address)
+void WebServer::timer(int connfd, sockaddr_in client_address)
 {
     users_[connfd].init(connfd, client_address, root_, CONNTrigmode_, close_log_, user_, passWord_, databaseName_);
 
     //初始化client_data数据
     //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
-    users_timer[connfd].address = client_address;
+    users_timer[connfd].addr = client_address;
     users_timer[connfd].sockfd = connfd;
     UtilTimer *timer = new UtilTimer();
     timer->user_data = &users_timer[connfd];
     timer->cb_func = cb_func;
     time_t cur = time(NULL);
-    timer->expire = cur + 3 * TIMESLOT;
+    timer->expire = cur + 10 * TIMESLOT;
     users_timer[connfd].timer = timer;
     utils.timer_lst_.add_timer(timer);
 }
@@ -198,9 +198,8 @@ void WebServer::deal_timer(UtilTimer *timer, int sockfd)
 
 bool WebServer::dealclientdata()
 {
-    InetAddress client_addr;
-    sockaddr_in addr = client_addr.getAddr();
-    socklen_t client_addrlength = sizeof(client_addr);
+    sockaddr_in addr;
+    socklen_t client_addrlength = sizeof(addr);
     if (0 == LISTENTrigmode_){
         int connfd = accept(listenfd_, (struct sockaddr *)&addr, &client_addrlength);
         if (connfd < 0){
@@ -215,7 +214,7 @@ bool WebServer::dealclientdata()
             LOG_ERROR("%s", "Internal server busy");
             return false;
         }
-        timer(connfd, client_addr);
+        timer(connfd, addr);
     }else {
         while (1){
             int connfd = accept(listenfd_, (struct sockaddr *)&addr, &client_addrlength);
@@ -230,7 +229,7 @@ bool WebServer::dealclientdata()
                 LOG_ERROR("%s", "Internal server busy");
                 break;
             }
-            timer(connfd, client_addr);
+            timer(connfd, addr);
         }
         return false;
     }
@@ -244,13 +243,13 @@ bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
     char signals[1024];
     ret = recv(pipefd_[0], signals, sizeof(signals), 0);
     if (ret == -1){
-        std::cout<<"ret == -1"<<std::endl;
+        std::cout<<"dealwithsignal ret == -1"<<std::endl;
         return false;
     }else if (ret == 0) {
-        std::cout<<"ret == 0"<<std::endl;
+        std::cout<<"dealwithsignal ret == 0"<<std::endl;
         return false;
     }else {
-        // std::cout<<"ret != 0,-1"<<std::endl;
+        // std::cout<<"dealwithsignal ret != 0,-1"<<std::endl;
         for (int i = 0; i < ret; ++i){
             switch (signals[i])
             {
@@ -354,15 +353,17 @@ void WebServer::eventLoop()
     bool stop_server = false;
 
     while (!stop_server){
-        std::cout<<"Epoll_wait:"<<std::endl;
+        // std::cout<<"Epoll_wait:"<<std::endl;
         int number = epoll_wait(epfd, events, MAX_EVENT_NUMBER, -1);
         std::cout<<"Epoll_wait number=:"<<number<<std::endl;
         if (number < 0 && errno != EINTR){
             std::cout<<"number<0"<<std::endl;
             LOG_ERROR("%s", "epoll failure");
             break;
-        }else if(number<0 && errno == EINTR){
-            std::cout<<"number<0 and errno=EINTR"<<std::endl;
+        // }else if(number<0 && errno == EINTR){
+        //     std::cout<<"number<0 and errno=EINTR"<<std::endl;
+        //     std::cout<<std::endl;
+        //     std::cout<<std::endl;
         }
 
         for (int i = 0; i < number; i++)
@@ -371,7 +372,7 @@ void WebServer::eventLoop()
 
             //处理新到的客户连接
             if (sockfd == listenfd_){
-                std::cout<<"sockfd == listenfd_"<<std::endl;
+                // std::cout<<"sockfd == listenfd_"<<std::endl;
                 bool flag = dealclientdata();
                 // std::cout<<"flag= "<<flag<<", i= "<<i<<std::endl;
                 if (false == flag)
@@ -382,7 +383,14 @@ void WebServer::eventLoop()
                 UtilTimer *timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);
             }
-            
+            //处理信号
+            else if ((sockfd == pipefd_[0]) && (events[i].events & EPOLLIN)){
+                // std::cout<<"Dealwithsignal"<<std::endl;
+                bool flag = dealwithsignal(timeout, stop_server);
+                // std::cout<<"flag= "<<flag<<", i= "<<i<<std::endl;
+                if (false == flag)
+                    LOG_ERROR("%s", "dealclientdata failure");
+            }
             //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN){
                 std::cout<<"Epollin"<<std::endl;
@@ -391,17 +399,10 @@ void WebServer::eventLoop()
                 std::cout<<"Epollout"<<std::endl;
                 dealwithwrite(sockfd);
             }
-            //处理信号
-            else if ((sockfd == pipefd_[0]) && (events[i].events & EPOLLIN)){
-                std::cout<<"Dealwithsignal"<<std::endl;
-                bool flag = dealwithsignal(timeout, stop_server);
-                // std::cout<<"flag= "<<flag<<", i= "<<i<<std::endl;
-                if (false == flag)
-                    LOG_ERROR("%s", "dealclientdata failure");
-            }
-            std::cout<<"i= "<<i<<std::endl;
+            
+            // std::cout<<"i= "<<i<<std::endl;
         }
-        std::cout<<"timeout= "<<timeout<<std::endl;
+        // std::cout<<"timeout= "<<timeout<<std::endl;
         if (timeout){
             utils.timer_handler();
 

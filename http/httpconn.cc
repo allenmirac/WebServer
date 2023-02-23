@@ -91,10 +91,10 @@ void HttpConn::close_conn(bool real_close){
     }
 }
 
-void HttpConn::init(int sockfd, InetAddress addr, char* root, int TRIGMode, int close_log, std::string user, std::string password, std::string dataBaseName){
+void HttpConn::init(int sockfd, const sockaddr_in &addr, char* root, int TRIGMode, int close_log, std::string user, std::string password, std::string dataBaseName){
     fd_=sockfd;
     addr_ = addr;
-    addFd(epfd_, true, true, TRIGMode_);
+    addFd(epfd_, fd_, true, TRIGMode_);//很久之前没有修改的bug,一直都没有发现， 将true换成fd_
     user_count_++;
 
     doc_root_ = root;
@@ -162,6 +162,7 @@ bool HttpConn::read_once(){
     // LT
     if(0 == TRIGMode_){
         bytes_read = recv(fd_, read_buf_ + read_idx_, READ_BUFFER_SIZE-read_idx_, 0);
+        // std::cout<<"HttpConn::read_once bytes_read :"<<bytes_read<<std::endl;
         if(bytes_read<=0){
             return false;
         }
@@ -265,7 +266,7 @@ HttpConn::HTTP_CODE HttpConn::process_read(){
     LINE_STATUS line_status = LINE_OK;
     HTTP_CODE ret = NO_REQUEST;
     char *text =nullptr;
-
+    std::cout<<"HttpConn::process_read check_state_:"<<check_state_<<std::endl;
     while((check_state_ == CHECK_STATE_CONTENT && line_status == LINE_OK)){
         text = get_line();
         start_line_ = checked_idx_;
@@ -573,6 +574,7 @@ bool HttpConn::process_write(HTTP_CODE ret)
 void HttpConn::process()
 {
     HTTP_CODE read_ret = process_read();
+    // std::cout<<"HttpConn process read_ret:"<<read_ret<<std::endl;
     if (read_ret == NO_REQUEST)
     {
         modifyFd(epfd_, fd_, EPOLLIN, TRIGMode_);

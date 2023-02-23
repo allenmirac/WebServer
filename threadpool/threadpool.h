@@ -96,7 +96,7 @@ bool ThreadPool<T>::append_p(T *request){
     m_workqueue.push_back(request);
     m_queuelocker.unlock();
     m_queuestat.post();
-    return false;
+    return true;
 }
 
 template <typename T>
@@ -109,11 +109,11 @@ void ThreadPool<T>::run(){
             m_queuelocker.unlock();
             continue;
         }
-        // printf("hahaha\n");
+        // std::cout<<"m_workqueue size: "<<m_workqueue.size()<<std::endl;
         T * request = m_workqueue.front();
         m_workqueue.pop_front();
         m_queuelocker.unlock();
-        printf("%d\n", m_actor_model);
+        // printf("m_actor_model:%d\n", m_actor_model);
         if(1==m_actor_model){
             if(0 == request->state_){
                 if(request->read_once()){
@@ -135,6 +135,7 @@ void ThreadPool<T>::run(){
         }
         else {
             connectionRAII mysqlconn(&request->mysql, m_connPool);
+            // std::cout<<"request->process()"<<std::endl;
             request->process();
             // sql::Connection *conn = m_connPool->GetConnection();
             // if(conn!=nullptr){
@@ -148,6 +149,7 @@ void ThreadPool<T>::run(){
 template <typename T>
 void *ThreadPool<T>::worker(void*arg){
     ThreadPool *pool = static_cast<ThreadPool *> (arg);
+    // std::cout<<"ThreadPool<T>::worker run"<<std::endl;
     pool->run();
     return pool;
 }

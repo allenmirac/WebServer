@@ -23,7 +23,7 @@ namespace webserver
 class UtilTimer;
 
 struct client_data {
-    InetAddress address;
+    sockaddr_in addr;
     int sockfd;
     UtilTimer* timer;
 };
@@ -32,7 +32,7 @@ class UtilTimer {
 public:
     UtilTimer():prev(nullptr) ,next(nullptr) {};
 public:
-    time_t expire;
+    time_t expire;//到期时间
     void(*cb_func)(client_data* );
     client_data *user_data;
     UtilTimer *prev;

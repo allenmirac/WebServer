@@ -66,13 +66,13 @@ public:
     ~HttpConn(){}
 
 public:
-    void init(int sockfd, InetAddress addr, char* root, int, int, std::string user, std::string password, std::string dataBaseName);
+    void init(int sockfd, const sockaddr_in &addr, char* root, int, int, std::string user, std::string password, std::string dataBaseName);
     void close_conn(bool real_close = true);
     void process();
     bool read_once();
     bool write();
     sockaddr_in get_address(){
-        return addr_.getAddr();
+        return addr_;
     };
     void init_mysql_result(ConnPool *connPool);
     int timer_flag;
@@ -106,7 +106,7 @@ public:
 
 private:
     int fd_;
-    InetAddress addr_;
+    sockaddr_in addr_;
     char read_buf_[READ_BUFFER_SIZE];
     char write_buf_[WRITE_BUFFER_SIZE];
     int read_idx_;
