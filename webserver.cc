@@ -355,7 +355,7 @@ void WebServer::eventLoop()
     while (!stop_server){
         // std::cout<<"Epoll_wait:"<<std::endl;
         int number = epoll_wait(epfd, events, MAX_EVENT_NUMBER, -1);
-        // std::cout<<"Epoll_wait number=:"<<number<<std::endl;
+        std::cout<<"Epoll_wait number=:"<<number<<std::endl;
         if (number < 0 && errno != EINTR){
             std::cout<<"number<0"<<std::endl;
             LOG_ERROR("%s", "epoll failure");
@@ -372,7 +372,7 @@ void WebServer::eventLoop()
 
             //处理新到的客户连接
             if (sockfd == listenfd_){
-                // std::cout<<"sockfd == listenfd_"<<std::endl;
+                std::cout<<"sockfd == listenfd_ and sockfd="<<sockfd<<std::endl;
                 bool flag = dealclientdata();
                 if (false == flag)
                     continue;
@@ -391,9 +391,11 @@ void WebServer::eventLoop()
             }
             //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN){
-                // std::cout<<"Epollin"<<std::endl;
+                // std::cout<<"users_: "<<users_<<std::endl;
+                std::cout<<"Epollin"<<std::endl;
                 dealwithread(sockfd);
             }else if (events[i].events & EPOLLOUT){
+                // std::cout<<"users_: "<<users_<<std::endl;
                 std::cout<<"Epollout"<<std::endl;
                 dealwithwrite(sockfd);
             }
