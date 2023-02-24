@@ -199,7 +199,7 @@ HttpConn::HTTP_CODE HttpConn::parse_request_line(char *text){
     }
     *url_ ++='\0';
     char *method = text;
-    // std::cout<<"HttpConn::parse_request_line method="<<method<<std::endl;
+    std::cout<<"HttpConn::parse_request_line method="<<method<<std::endl;
     if(strcasecmp(method, "GET") == 0){
         method_ = GET;
     } else if(strcasecmp(method, "POST") == 0){
@@ -298,13 +298,14 @@ HttpConn::HTTP_CODE HttpConn::process_read(){
         }
         case CHECK_STATE_HEADER:{
             ret = parse_headers(text);
+            // std::cout<<"check_state_ == CHECK_STATE_HEADER"<<std::endl;
             if(ret == BAD_REQUEST){
                 return BAD_REQUEST;
             } else if(ret == GET_REQUEST){
                 return do_request();
-                line_status = LINE_OPEN;
-                break;
             }
+            line_status = LINE_OPEN;
+            break;
         }
         default:
             return INTERNAL_ERROR;
@@ -318,7 +319,7 @@ HttpConn::HTTP_CODE HttpConn::do_request()
 {
     strcpy(real_file_, doc_root_);
     int len = strlen(doc_root_);
-    //printf("url_:%s\n", url_);
+    // printf("url_:%s\n", url_);
     const char *p = strrchr(url_, '/');
 
     if (cgi_ == 1 && (*(p + 1) == '2' || *(p + 1) == '3')){
@@ -441,7 +442,7 @@ void HttpConn::unmap(){
 bool HttpConn::write()
 {
     int temp = 0;
-    std::cout<<"HttpConn::write bytes_to_send="<<bytes_to_send<<std::endl;
+    // std::cout<<"HttpConn::write bytes_to_send="<<bytes_to_send<<std::endl;
     if (bytes_to_send == 0){
         modifyFd(epfd_, EPOLLIN, true, TRIGMode_);
         init();
@@ -450,7 +451,7 @@ bool HttpConn::write()
 
     while (1){
         temp = writev(fd_, iv_, iv_count_);
-
+        // std::cout<<"HttpConn::write writev temp="<<temp<<std::endl;
         if (temp < 0){
             if (errno == EAGAIN){
                 modifyFd(epfd_, fd_, EPOLLOUT, TRIGMode_);
@@ -462,6 +463,8 @@ bool HttpConn::write()
 
         bytes_have_send += temp;
         bytes_to_send -= temp;
+        // std::cout<<"HttpConn::write bytes_have_send="<<bytes_have_send<<std::endl;
+        // std::cout<<"HttpConn::write iov_[0].iov_len="<<iv_[0].iov_len<<std::endl;
         if (bytes_have_send >= iv_[0].iov_len){
             iv_[0].iov_len = 0;
             iv_[1].iov_base = file_address_ + (bytes_have_send - write_idx_);
@@ -470,7 +473,7 @@ bool HttpConn::write()
             iv_[0].iov_base = write_buf_ + bytes_have_send;
             iv_[0].iov_len = iv_[0].iov_len - bytes_have_send;
         }
-
+        std::cout<<"HttpConn::write bytes_to_send="<<bytes_to_send<<std::endl;
         if (bytes_to_send <= 0){
             unmap();
             modifyFd(epfd_, fd_, EPOLLIN, TRIGMode_);

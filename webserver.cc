@@ -12,7 +12,7 @@ WebServer::WebServer(){
     root_ = (char *)malloc(strlen(server_path)+strlen(root)+1);
     strcpy(root_, server_path);
     strcat(root_, root);
-    std::cout<<root_<<std::endl;
+    // std::cout<<root_<<std::endl;
     //定时器
     users_timer = new client_data[MAX_FD];
 }

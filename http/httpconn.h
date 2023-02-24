@@ -120,7 +120,7 @@ private:
     char *version_;
     char *host_;
     int content_length_;
-    bool linger_;
+    bool linger_;//徘徊；逗留,持续连接的开关
     char *file_address_;
     struct stat file_stat_;
     struct iovec iv_[2];
