@@ -17,6 +17,7 @@
 #include <semaphore.h>
 namespace webserver
 {
+// mutex
 class locker {
 public:
     locker(){
@@ -28,10 +29,10 @@ public:
         pthread_mutex_destroy(&m_mutex);
     }
     bool lock(){
-        return pthread_mutex_lock(&m_mutex);
+        return pthread_mutex_lock(&m_mutex)==0;
     }
     bool unlock(){
-        return pthread_mutex_unlock(&m_mutex);
+        return pthread_mutex_unlock(&m_mutex)==0;
     }
     pthread_mutex_t* get(){
         return &m_mutex;
@@ -58,11 +59,11 @@ public:
     ~sem(){
         sem_destroy(&m_sem);
     }
-    // semaphore--;
+    // semaphore--; get a resource
     bool wait(){
-        return sem_wait(&m_sem);
+        return sem_wait(&m_sem)==0;
     }
-    // semaphore++;
+    // semaphore++; return a resource
     bool post(){
         return sem_post(&m_sem) == 0;
     }
@@ -80,20 +81,24 @@ public:
     ~cond(){
         pthread_cond_destroy(&m_cond);
     }
-
+    //函数内部会有一次解锁和加锁操作.
     bool wait(locker* mutex){
-        int ret=0;
-        ret = pthread_cond_wait(&m_cond, mutex->get());
+        mutex->lock();
+        int ret=pthread_cond_wait(&m_cond, mutex->get());
+        mutex->unlock();
         return ret==0;
     }
-    bool timewait(pthread_mutex_t* mutex, struct timespec t){
-        int ret=0;
-        ret = pthread_cond_timedwait(&m_cond, mutex, &t);
+    bool timewait(locker* mutex, struct timespec t){
+        mutex->lock();
+        int ret = pthread_cond_timedwait(&m_cond, mutex->get(), &t)==0;
+        mutex->unlock();
         return ret==0;
     }
+    // notify
     bool signal(){
         return pthread_cond_signal(&m_cond) == 0;
     }
+    // notifyAll
     bool broadcast(){
         return pthread_cond_broadcast(&m_cond) == 0;
     }
