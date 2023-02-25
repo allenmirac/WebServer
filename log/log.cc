@@ -58,10 +58,10 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
 
     today = my_tm.tm_mday;
     fp_ = fopen(log_full_name, "a");
-    if(fp_ != nullptr){
+    if(fp_ == nullptr){
         return false;
     }
-    std::cout<<"init success"<<std::endl;
+    // std::cout<<"log init success"<<std::endl;
     return true;
 }
 
@@ -92,7 +92,7 @@ void Log::write_log(int level, const char *format, ...){
 
     mutex_.lock();
     count_++;
-    if(today != my_tm.tm_mday || count_ % split_lines_ ==0){
+    if(today != my_tm.tm_mday || count_ % split_lines_ ==0){//everyday log
         char new_log[300] = {0};
         fflush(fp_);
         fclose(fp_);
@@ -115,13 +115,11 @@ void Log::write_log(int level, const char *format, ...){
     std::string log_str;// the true output log string.
 
     mutex_.lock();
-    // int n=1, m=0;
+    // 写入时间
     int n = snprintf(buf_, 48, "%d-%02d-%02d %02d:%02d:%02d.%06ld %s", my_tm.tm_year + 1900, my_tm.tm_mon+1, my_tm.tm_mday,
                     my_tm.tm_hour, my_tm.tm_min, my_tm.tm_sec, now.tv_usec, s);
     // https://langzi989.github.io/2018/01/01/C%E4%B8%ADsnprintf%E4%B8%8Evsnprintf%E5%87%BD%E6%95%B0/
     int m = vsnprintf(buf_+n, log_buf_size_-1, format, valist);
-    // std::cout<<n<<"  "<<m<<std::endl;
-    // buf_[0]=1;
     buf_[n+m] = '\n';
     buf_[n+m+1] = '\0';
     log_str = buf_;

@@ -33,7 +33,6 @@ public:
         m_size = 0;
         m_front = -1;
         m_back = -1;
-        m_mutex.unlock();
     }
     void clear(){
         m_mutex.lock();
@@ -147,7 +146,7 @@ public:
         if (m_size <= 0) {
             t.tv_sec = now.tv_sec + ms_timeout / 1000;
             t.tv_nsec = (ms_timeout % 1000) * 1000;
-            if (!m_cond.timewait(m_mutex.get(), t)) {
+            if (!m_cond.timewait(&m_mutex, t)) {
                 m_mutex.unlock();
                 return false;
             }

@@ -20,11 +20,10 @@ namespace webserver
 class Log{
 public:
     static Log *get_instance(){
-        if(instance_==nullptr){
-            instance_ = new Log();
-        }
+        // std::cout<<"Log getinstance()"<<std::endl;
+        static Log instance_;
         // std::cout<<"get_instance"<<std::endl;
-        return instance_;
+        return &instance_;
     }
 
     static void *flush_log_thread(void* args){
