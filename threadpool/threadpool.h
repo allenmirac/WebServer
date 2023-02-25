@@ -57,6 +57,7 @@ ThreadPool<T>::ThreadPool(int actor_model, ConnPool*connPool, int thread_number,
     for(int i=0; i<thread_number; i++){
         if(pthread_create(m_threads + i, NULL, worker, this) != 0){
             delete[] m_threads;
+            throw std::exception();
         }
         if(pthread_detach(m_threads[i])){
             delete[] m_threads;
@@ -109,16 +110,19 @@ void ThreadPool<T>::run(){
             m_queuelocker.unlock();
             continue;
         }
-        // std::cout<<"m_workqueue size: "<<m_workqueue.size()<<std::endl;
         T * request = m_workqueue.front();
         m_workqueue.pop_front();
         m_queuelocker.unlock();
+        if(!request){
+            continue;
+        }
         // printf("m_actor_model:%d\n", m_actor_model);
         if(1==m_actor_model){
             if(0 == request->state_){
                 if(request->read_once()){
                     request->improv = 1;
                     connectionRAII mysqlconn(&request->mysql, m_connPool);
+                    request->process();
                 } else {
                     request->improv = 1;
                     request->timer_flag=1;
@@ -129,7 +133,6 @@ void ThreadPool<T>::run(){
                 } else {
                     request->improv=1;
                     request->timer_flag=1;
-
                 }
             }
         }

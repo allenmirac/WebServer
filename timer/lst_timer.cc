@@ -194,6 +194,7 @@ void cb_func(client_data *data){
     epoll_ctl(Utils::epfd, EPOLL_CTL_DEL, data->sockfd, 0);
     assert(data);
     close(data->sockfd);
+    std::cout<<"lst_timer cb_funcuser_count_--"<<std::endl;
     HttpConn::user_count_--;
 }
 } // namespace webserver

@@ -84,7 +84,7 @@ void HttpConn::init_mysql_result(ConnPool *connPool){
 
 void HttpConn::close_conn(bool real_close){
     if(real_close && (fd_!=-1)){
-        printf("close fd=%d", fd_);
+        std::cout<<"HttpConn::close_conn close_conn, fd="<<fd_<<std::endl;
         removeFd(epfd_, fd_);
         user_count_--;
         fd_=-1;
@@ -106,6 +106,8 @@ void HttpConn::init(int sockfd, const sockaddr_in &addr, char* root, int TRIGMod
 
     init();
 }
+//初始化新接受的连接
+//check_state默认为分析请求行状态
 void HttpConn::init(){
     mysql = nullptr;
     bytes_to_send = 0;
@@ -128,6 +130,8 @@ void HttpConn::init(){
     memset(real_file_, '\0', FILENAME_LEN);
 }
 
+//从状态机，用于分析出"一行"内容
+//返回值为行的读取状态，有LINE_OK,LINE_BAD,LINE_OPEN
 HttpConn::LINE_STATUS HttpConn::parse_line(){
     char temp;
     // std::cout<<"HttpConn::parse_line check_idx_: "<<checked_idx_<<std::endl;//0
@@ -156,6 +160,8 @@ HttpConn::LINE_STATUS HttpConn::parse_line(){
     return LINE_OPEN;
 }
 
+//循环读取客户数据，直到无数据可读或对方关闭连接
+//非阻塞ET工作模式下，需要一次性将数据读完
 bool HttpConn::read_once(){
     if(read_idx_ >= READ_BUFFER_SIZE){
         return false;
@@ -307,6 +313,15 @@ HttpConn::HTTP_CODE HttpConn::process_read(){
             line_status = LINE_OPEN;
             break;
         }
+        case CHECK_STATE_CONTENT:
+        {
+            ret = parse_content(text);
+            std::cout<<"check_state_ == CHECK_STATE_CONTENT"<<std::endl;
+            if (ret == GET_REQUEST)
+                return do_request();
+            line_status = LINE_OPEN;
+            break;
+        }
         default:
             return INTERNAL_ERROR;
         }
@@ -342,7 +357,7 @@ HttpConn::HTTP_CODE HttpConn::do_request()
         for (i = i + 10; str_req_head_[i] != '\0'; ++i, ++j)
             password[j] = str_req_head_[i];
         password[j] = '\0';
-
+        std::cout<<"name="<<name<<", password="<<password<<std::endl;
         if (*(p + 1) == '3'){
             //如果是注册，先检测数据库中是否有重名的
             //没有重名的，进行增加数据
@@ -478,7 +493,7 @@ bool HttpConn::write()
             unmap();
             modifyFd(epfd_, fd_, EPOLLIN, TRIGMode_);
 
-            if (linger_){
+            if (!linger_){//如果不是持续连接，将这个HttpConn初始化
                 init();
                 return true;
             }else{
@@ -561,6 +576,7 @@ bool HttpConn::process_write(HTTP_CODE ret)
     }
     case FILE_REQUEST:
     {
+        std::cout<<"FILE_REQUEST, file_stat_.st_size="<<file_stat_.st_size<<std::endl;
         add_status_line(200, ok_200_title);
         if (file_stat_.st_size != 0)
         {

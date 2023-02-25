@@ -4,6 +4,7 @@ namespace webserver
 {
 
 WebServer::WebServer(){
+    // 一个HttpConn维持一个连接
     users_ = new HttpConn[MAX_FD/1000];//epoll_create1 failed: Too many open files
 
     char server_path[200];
@@ -100,7 +101,7 @@ void WebServer::eventListen()
     listenfd_ = socket(AF_INET, SOCK_STREAM, 0);
     assert(listenfd_ >= 0);
 
-    //优雅关闭连接:https://www.cnblogs.com/caosiyang/archive/2012/03/29/2422956.html
+    //优雅关闭连接:linger前一位开关，后一位时间
     if (0 == OPT_LINGER_)
     {
         struct linger tmp = {0, 1};
@@ -183,7 +184,7 @@ void WebServer::adjust_timer(UtilTimer *timer)
     timer->expire = cur + 3 * TIMESLOT;
     utils.timer_lst_.adjust_timer(timer);
 
-    LOG_INFO("%s", "adjust timer once");
+    LOG_INFO("adjust_timer:%s", "adjust timer once");
 }
 
 void WebServer::deal_timer(UtilTimer *timer, int sockfd)
@@ -193,7 +194,7 @@ void WebServer::deal_timer(UtilTimer *timer, int sockfd)
         utils.timer_lst_.del_timer(timer);
     }
 
-    LOG_INFO("close fd %d", users_timer[sockfd].sockfd);
+    LOG_INFO("deal_timer close fd %d", users_timer[sockfd].sockfd);
 }
 
 bool WebServer::dealclientdata()
@@ -355,7 +356,7 @@ void WebServer::eventLoop()
     while (!stop_server){
         // std::cout<<"Epoll_wait:"<<std::endl;
         int number = epoll_wait(epfd, events, MAX_EVENT_NUMBER, -1);
-        std::cout<<"Epoll_wait number=:"<<number<<std::endl;
+        // std::cout<<"Epoll_wait number=:"<<number<<std::endl;
         if (number < 0 && errno != EINTR){
             std::cout<<"number<0"<<std::endl;
             LOG_ERROR("%s", "epoll failure");
@@ -377,7 +378,7 @@ void WebServer::eventLoop()
                 if (false == flag)
                     continue;
             }else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)){
-                std::cout<<"client close"<<std::endl;
+                std::cout<<"client close!!!!!!!!!!!!!!!!!!"<<std::endl;
                 //服务器端关闭连接，移除对应的定时器
                 UtilTimer *timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);

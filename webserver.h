@@ -39,8 +39,11 @@ public:
     //基础
     int port_;
     char *root_;
+    // 是否异步写
     int log_write_;
+    // 0 open log 1 close log
     int close_log_;
+    // 
     int actormodel_;
 
     int pipefd_[2];
@@ -63,9 +66,13 @@ public:
     epoll_event events[MAX_EVENT_NUMBER];
 
     int listenfd_;
+    //优雅关闭连接，默认不使用
     int OPT_LINGER_;
+    //触发组合模式,默认listenfd LT + connfd LT
     int TRIGMode_;
+    //listenfd触发模式，默认LT
     int LISTENTrigmode_;
+    //connfd触发模式，默认LT
     int CONNTrigmode_;
 
     //定时器相关
