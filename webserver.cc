@@ -389,12 +389,12 @@ void WebServer::eventLoop()
             //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN){
                 // std::cout<<"HttpConn::user_count_:"<<HttpConn::user_count_<<std::endl;
-                std::cout<<"Epollin"<<std::endl;
+                // std::cout<<"Epollin"<<std::endl;
                 dealwithread(sockfd);
             }else if (events[i].events & EPOLLOUT){
                 // std::cout<<"HttpConn::user_count_:"<<HttpConn::user_count_<<std::endl;
                 // std::cout<<"users_: "<<users_<<std::endl;
-                std::cout<<"Epollout"<<std::endl;
+                // std::cout<<"Epollout"<<std::endl;
                 dealwithwrite(sockfd);
             }
         }
