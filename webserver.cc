@@ -207,9 +207,6 @@ bool WebServer::dealclientdata()
             LOG_ERROR("%s:errno is:%d", "accept error", errno);
             return false;
         }
-        // else{
-        //     std::cout<<"dealclientdata accpet succeed"<<std::endl;
-        // }
         if (HttpConn::user_count_ >= MAX_FD){
             utils.show_error(connfd, "Internal server busy");
             LOG_ERROR("%s", "Internal server busy");
@@ -354,7 +351,6 @@ void WebServer::eventLoop()
     bool stop_server = false;
 
     while (!stop_server){
-        // std::cout<<"Epoll_wait:"<<std::endl;
         int number = epoll_wait(epfd, events, MAX_EVENT_NUMBER, -1);
         // std::cout<<"Epoll_wait number=:"<<number<<std::endl;
         if (number < 0 && errno != EINTR){
@@ -366,14 +362,13 @@ void WebServer::eventLoop()
         //     std::cout<<std::endl;
         //     std::cout<<std::endl;
         }
-
         for (int i = 0; i < number; i++)
         {
             int sockfd = events[i].data.fd;
 
             //处理新到的客户连接
             if (sockfd == listenfd_){
-                std::cout<<"sockfd == listenfd_ and sockfd="<<sockfd<<std::endl;
+                // std::cout<<"sockfd == listenfd_ and sockfd="<<sockfd<<std::endl;
                 bool flag = dealclientdata();
                 if (false == flag)
                     continue;
@@ -382,6 +377,7 @@ void WebServer::eventLoop()
                 //服务器端关闭连接，移除对应的定时器
                 UtilTimer *timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);
+                // std::cout<<"HttpConn::user_count_:"<<HttpConn::user_count_<<std::endl;
             }
             //处理信号
             else if ((sockfd == pipefd_[0]) && (events[i].events & EPOLLIN)){
@@ -392,10 +388,11 @@ void WebServer::eventLoop()
             }
             //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN){
-                // std::cout<<"users_: "<<users_<<std::endl;
+                // std::cout<<"HttpConn::user_count_:"<<HttpConn::user_count_<<std::endl;
                 std::cout<<"Epollin"<<std::endl;
                 dealwithread(sockfd);
             }else if (events[i].events & EPOLLOUT){
+                // std::cout<<"HttpConn::user_count_:"<<HttpConn::user_count_<<std::endl;
                 // std::cout<<"users_: "<<users_<<std::endl;
                 std::cout<<"Epollout"<<std::endl;
                 dealwithwrite(sockfd);

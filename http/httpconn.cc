@@ -205,7 +205,7 @@ HttpConn::HTTP_CODE HttpConn::parse_request_line(char *text){
     }
     *url_ ++='\0';
     char *method = text;
-    std::cout<<"HttpConn::parse_request_line method="<<method<<std::endl;
+    // std::cout<<"HttpConn::parse_request_line method="<<method<<std::endl;
     if(strcasecmp(method, "GET") == 0){
         method_ = GET;
     } else if(strcasecmp(method, "POST") == 0){
@@ -488,7 +488,7 @@ bool HttpConn::write()
             iv_[0].iov_base = write_buf_ + bytes_have_send;
             iv_[0].iov_len = iv_[0].iov_len - bytes_have_send;
         }
-        std::cout<<"HttpConn::write bytes_to_send="<<bytes_to_send<<std::endl;
+        // std::cout<<"HttpConn::write bytes_to_send="<<bytes_to_send<<std::endl;
         if (bytes_to_send <= 0){
             unmap();
             modifyFd(epfd_, fd_, EPOLLIN, TRIGMode_);
@@ -576,7 +576,7 @@ bool HttpConn::process_write(HTTP_CODE ret)
     }
     case FILE_REQUEST:
     {
-        std::cout<<"FILE_REQUEST, file_stat_.st_size="<<file_stat_.st_size<<std::endl;
+        // std::cout<<"FILE_REQUEST, file_stat_.st_size="<<file_stat_.st_size<<std::endl;
         add_status_line(200, ok_200_title);
         if (file_stat_.st_size != 0)
         {
