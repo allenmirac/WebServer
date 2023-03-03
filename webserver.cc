@@ -147,7 +147,7 @@ void WebServer::eventListen()
     ret = socketpair(PF_UNIX, SOCK_STREAM, 0, pipefd_);//pipefd_[0],pipefd_[1],这对套接字可以用于全双工通信.
     assert(ret != -1);
     utils.setnonblocking(pipefd_[1]);
-    utils.addFd(epfd, pipefd_[0], false, 0);
+    //utils.addFd(epfd, pipefd_[0], false, 0);
 
     //添加信号处理
     utils.addsig(SIGPIPE, SIG_IGN);
@@ -216,6 +216,7 @@ bool WebServer::dealclientdata()
     }else {
         while (1){
             int connfd = accept(listenfd_, (struct sockaddr *)&addr, &client_addrlength);
+            std::cout<<"accept"<<connfd<<std::endl;
             if (connfd < 0)
             {
                 LOG_ERROR("%s:errno is:%d", "accept error", errno);
@@ -368,7 +369,7 @@ void WebServer::eventLoop()
 
             //处理新到的客户连接
             if (sockfd == listenfd_){
-                // std::cout<<"sockfd == listenfd_ and sockfd="<<sockfd<<std::endl;
+                std::cout<<"sockfd == listenfd_ and sockfd="<<sockfd<<std::endl;
                 bool flag = dealclientdata();
                 if (false == flag)
                     continue;

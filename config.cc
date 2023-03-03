@@ -8,7 +8,7 @@ Config::Config(){
     LOGWrite = 0;
 
     //触发组合模式,默认listenfd LT + connfd LT
-    TRIGMode = 0;
+    TRIGMode = 3;
 
     //listenfd触发模式，默认LT
     LISTENTrigmode = 0;

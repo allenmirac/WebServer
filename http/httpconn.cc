@@ -126,7 +126,9 @@ void HttpConn::init(){
     timer_flag = 0;
     improv = 0;
     memset(read_buf_, '\0', READ_BUFFER_SIZE);
+    this->read_idx_ = 0;
     memset(write_buf_, '\0', WRITE_BUFFER_SIZE);
+    this->write_idx_ = 0;
     memset(real_file_, '\0', FILENAME_LEN);
 }
 
@@ -177,6 +179,7 @@ bool HttpConn::read_once(){
         if(bytes_read<=0){
             return false;
         }
+        std::cout<<read_buf_ <<std::endl;
         return true;
     }else{ // ET
         while(true){
@@ -191,12 +194,13 @@ bool HttpConn::read_once(){
             }
             read_idx_ += bytes_read;
         }
+        std::cout<<read_buf_ <<std::endl;
         return true;
     }
 }
 
 HttpConn::HTTP_CODE HttpConn::parse_request_line(char *text){
-    // std::cout<<"HttpConn::parse_request_line text="<<text<<std::endl;
+    std::cout<<"HttpConn::parse_request_line text="<<text<<std::endl;
     // https://cplusplus.com/reference/cstring/strpbrk/
     url_ = strpbrk(text, " \t");
     // std::cout<<"HttpConn::parse_request_line url_="<<url_<<std::endl;
@@ -246,6 +250,7 @@ HttpConn::HTTP_CODE HttpConn::parse_request_line(char *text){
 }
 
 HttpConn::HTTP_CODE HttpConn::parse_headers(char *text){
+    // std::cout<<"HttpConn::parse_headers text="<<text<<std::endl;
     if (text[0] == '\0'){
         if (content_length_ != 0){
             check_state_ = CHECK_STATE_CONTENT;
@@ -295,8 +300,9 @@ HttpConn::HTTP_CODE HttpConn::process_read(){
         switch (check_state_)
         {
         case CHECK_STATE_REQUESTLINE:{
-            // std::cout<<"check_state_ == CHECK_STATE_REQUESTLINE"<<std::endl;
+            std::cout<<"check_state_ == CHECK_STATE_REQUESTLINE"<<std::endl;
             ret = parse_request_line(text);
+            // std::cout<<"text= "<<text<<std::endl;
             if(ret == BAD_REQUEST){
                 return BAD_REQUEST;
             }
@@ -305,6 +311,7 @@ HttpConn::HTTP_CODE HttpConn::process_read(){
         case CHECK_STATE_HEADER:{
             ret = parse_headers(text);
             // std::cout<<"check_state_ == CHECK_STATE_HEADER"<<std::endl;
+            std::cout<<"HttpConn::process_read check_state_ = "<<check_state_<<std::endl;
             if(ret == BAD_REQUEST){
                 return BAD_REQUEST;
             } else if(ret == GET_REQUEST){
