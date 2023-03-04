@@ -48,6 +48,7 @@ void removeFd(int epollfd, int fd)
 }
 
 //将事件重置为EPOLLONESHOT
+//ONESHOT的作用是每次事件触发后，就从红黑树中删除监听这个socket
 void modifyFd(int epollfd, int fd, int ev, int TRIGMode)
 {
     epoll_event event;
@@ -132,8 +133,8 @@ void HttpConn::init(){
     memset(real_file_, '\0', FILENAME_LEN);
 }
 
-//从状态机，用于分析出"一行"内容
-//返回值为行的读取状态，有LINE_OK,LINE_BAD,LINE_OPEN
+// 从状态机，用于解析一行内容
+// 返回值为行的读取状态，有LINE_OK,LINE_BAD,LINE_OPEN
 HttpConn::LINE_STATUS HttpConn::parse_line(){
     char temp;
     // std::cout<<"HttpConn::parse_line check_idx_: "<<checked_idx_<<std::endl;//0

@@ -25,6 +25,7 @@
 namespace webserver
 {
 
+// HTTP请求的读取与分析
 class HttpConn {
 public:
     static const int FILENAME_LEN = 200;
@@ -41,25 +42,28 @@ public:
         CONNECT,
         PATH
     };
+    // 主状态机的三种可能的状态：当前正在分析请求行，当前正在分析头部字段、当前正在分析内容
     enum CHECK_STATE {
-        CHECK_STATE_REQUESTLINE = 0,
-        CHECK_STATE_HEADER,
-        CHECK_STATE_CONTENT
+        CHECK_STATE_REQUESTLINE = 0,    //当前正在分析请求行
+        CHECK_STATE_HEADER,             //当前正在分析头部字段
+        CHECK_STATE_CONTENT             //当前正在分析内容
     };
+    // 服务器处理HTTP请求的结果
     enum HTTP_CODE {
-        NO_REQUEST,
-        GET_REQUEST,
-        BAD_REQUEST,
-        NO_RESOURCE,
-        FORBIDDEN_REQUEST,
-        FILE_REQUEST,
-        INTERNAL_ERROR,
-        CLOSE_CONNECTION
+        NO_REQUEST,                     //请求不完整、需要继续读取用户数据
+        GET_REQUEST,                    //获得了一个完整的用户请求
+        BAD_REQUEST,                    //用户请求语法错误
+        NO_RESOURCE,                    //没有资源
+        FORBIDDEN_REQUEST,              //用户对资源没有访问权限
+        FILE_REQUEST,                   //文件请求
+        INTERNAL_ERROR,                 //服务器内部错误
+        CLOSE_CONNECTION                //客户端已关闭连接
     };
+    // 从状态机的三种可能的状态，读取到一个完整的行，行出错，行数据尚且不完整
     enum LINE_STATUS {
-        LINE_OK = 0,
-        LINE_BAD,
-        LINE_OPEN
+        LINE_OK = 0,                    //读取到一个完整的行
+        LINE_BAD,                       //行出错
+        LINE_OPEN                       //行数据尚且不完整
     };
 public:
     HttpConn(){}

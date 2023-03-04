@@ -376,6 +376,7 @@ void WebServer::eventLoop()
             }else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)){
                 std::cout<<"client close!!!!!!!!!!!!!!!!!!"<<std::endl;
                 //服务器端关闭连接，移除对应的定时器
+                users_[sockfd].close_conn(true);
                 UtilTimer *timer = users_timer[sockfd].timer;
                 deal_timer(timer, sockfd);
                 // std::cout<<"HttpConn::user_count_:"<<HttpConn::user_count_<<std::endl;
