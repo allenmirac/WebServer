@@ -179,7 +179,7 @@ bool HttpConn::read_once(){
         if(bytes_read<=0){
             return false;
         }
-        std::cout<<read_buf_ <<std::endl;
+        // std::cout<<read_buf_ <<std::endl;
         return true;
     }else{ // ET
         while(true){
@@ -194,13 +194,13 @@ bool HttpConn::read_once(){
             }
             read_idx_ += bytes_read;
         }
-        std::cout<<read_buf_ <<std::endl;
+        // std::cout<<read_buf_ <<std::endl;
         return true;
     }
 }
 
 HttpConn::HTTP_CODE HttpConn::parse_request_line(char *text){
-    std::cout<<"HttpConn::parse_request_line text="<<text<<std::endl;
+    // std::cout<<"HttpConn::parse_request_line text="<<text<<std::endl;
     // https://cplusplus.com/reference/cstring/strpbrk/
     url_ = strpbrk(text, " \t");
     // std::cout<<"HttpConn::parse_request_line url_="<<url_<<std::endl;
@@ -300,7 +300,7 @@ HttpConn::HTTP_CODE HttpConn::process_read(){
         switch (check_state_)
         {
         case CHECK_STATE_REQUESTLINE:{
-            std::cout<<"check_state_ == CHECK_STATE_REQUESTLINE"<<std::endl;
+            // std::cout<<"check_state_ == CHECK_STATE_REQUESTLINE"<<std::endl;
             ret = parse_request_line(text);
             // std::cout<<"text= "<<text<<std::endl;
             if(ret == BAD_REQUEST){
@@ -311,7 +311,7 @@ HttpConn::HTTP_CODE HttpConn::process_read(){
         case CHECK_STATE_HEADER:{
             ret = parse_headers(text);
             // std::cout<<"check_state_ == CHECK_STATE_HEADER"<<std::endl;
-            std::cout<<"HttpConn::process_read check_state_ = "<<check_state_<<std::endl;
+            // std::cout<<"HttpConn::process_read check_state_ = "<<check_state_<<std::endl;
             if(ret == BAD_REQUEST){
                 return BAD_REQUEST;
             } else if(ret == GET_REQUEST){

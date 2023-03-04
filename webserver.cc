@@ -216,7 +216,7 @@ bool WebServer::dealclientdata()
     }else {
         while (1){
             int connfd = accept(listenfd_, (struct sockaddr *)&addr, &client_addrlength);
-            std::cout<<"accept"<<connfd<<std::endl;
+            // std::cout<<"accept"<<connfd<<std::endl;
             if (connfd < 0)
             {
                 LOG_ERROR("%s:errno is:%d", "accept error", errno);
@@ -369,7 +369,7 @@ void WebServer::eventLoop()
 
             //处理新到的客户连接
             if (sockfd == listenfd_){
-                std::cout<<"sockfd == listenfd_ and sockfd="<<sockfd<<std::endl;
+                // std::cout<<"sockfd == listenfd_ and sockfd="<<sockfd<<std::endl;
                 bool flag = dealclientdata();
                 if (false == flag)
                     continue;
