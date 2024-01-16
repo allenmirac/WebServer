@@ -15,3 +15,12 @@ Linux下C++的轻量级的web服务器
 
 Proactor 正是采用了异步 I/O 技术，所以被称为异步网络模型。
 
+## 定时器
+
+Intro:
+https://blog.csdn.net/qq_44859952/article/details/121291792
+
+Utils::sig_handler:
+`errno` 是一个全局变量，通常用于表示函数调用中发生的错误。它是一个整数，被设置为表示特定错误代码的值。errno 的值通常由系统调用或库函数在发生错误时进行设置，以便通知程序发生了什么问题。
+
+cb_func: 定时器回调函数:从内核事件表删除非活动连接在socket上的注册事件，关闭文件描述符，释放连接资源, httpconn减少连接数.
