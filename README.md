@@ -71,4 +71,10 @@ cb_func: 定时器回调函数:从内核事件表删除非活动连接在socket�
 ## Threalpool
 
 Intro:
-https://www.cnblogs.com/DAYceng/p/17399982.html
+https://www.cnblogs.com/DAYceng/p/17399982.html\
+
+
+## Buffer
+
+内部维护一个string
+
