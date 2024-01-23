@@ -39,10 +39,6 @@ void ConnPool::init(std::string url, std::string user, std::string password, std
             LOG_ERROR("sql::Connection Error");
             exit(1);
         }
-        if(nullptr == con){
-            LOG_ERROR("sql::Connection Error");
-            exit(1);
-        }
         connList.push_back(con);
         ++freeConn_;
     }

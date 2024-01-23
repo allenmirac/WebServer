@@ -79,3 +79,7 @@ https://www.cnblogs.com/DAYceng/p/17399982.html\
 内部维护一个string
 
 std::getline:遇到'\n'停下来,名如其意
+
+## InetAddress
+
+封装了一个struct sockaddr_in addr和socklen_t addr_len;

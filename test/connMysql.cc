@@ -15,39 +15,46 @@ using namespace webserver;
 
 ConnPool *connPool = ConnPool::GetInstance();
 int main() {
-    connPool->init("tcp://127.0.0.1:3306", "root", "123456", "users", 10, 0);
-    sql::Connection *con;
-	sql::Statement *stat;
-    sql::ResultSet *rs;
-    string sql = "select * from user";
-    // sql::mysql::MySQL_Driver *driver;
-    // Create a connection
-    // driver = sql::mysql::get_mysql_driver_instance();
-    // con = driver->connect("tcp://127.0.0.1:3306", "root", "123456");
-    // con->setSchema("users");
-    cout<<connPool->GetFreeConn()<<endl;
-    con = connPool->GetConnection();
-	stat = con->createStatement();
-	rs = stat->executeQuery(sql);
-	while(rs->next()){
-		cout<<"id = "<<rs->getInt(1)<<endl;
-		cout<<"name = "<<rs->getString(2)<<endl;
+    if(connPool != nullptr){
+        connPool->init("tcp://127.0.0.1:3306", "root", "123456", "users", 10, 0);
+        sql::Connection *con;
+        sql::Statement *stat;
+        sql::ResultSet *rs;
+        string sql = "select * from user";
+        // sql::mysql::MySQL_Driver *driver;
+        // Create a connection
+        // driver = sql::mysql::get_mysql_driver_instance();
+        // con = driver->connect("tcp://127.0.0.1:3306", "root", "123456");
+        // con->setSchema("users");
+        cout<<connPool->GetFreeConn()<<endl;
+        con = connPool->GetConnection();
+        stat = con->createStatement();
+        rs = stat->executeQuery(sql);
+        while(rs->next()){
+            cout<<"id = "<<rs->getInt(1)<<endl;
+            cout<<"name = "<<rs->getString(2)<<endl;
 
-	}
-    cout<<connPool->GetFreeConn()<<endl;
-    con = connPool->GetConnection();
+        }
+        cout<<connPool->GetFreeConn()<<endl;
+        con = connPool->GetConnection();
 
-    con = connPool->GetConnection();
-	stat = con->createStatement();
-	rs = stat->executeQuery(sql);
-	while(rs->next()){
-		cout<<"id = "<<rs->getInt(1)<<endl;
-		cout<<"name = "<<rs->getString(2)<<endl;
-	}
+        con = connPool->GetConnection();
+        stat = con->createStatement();
+        rs = stat->executeQuery(sql);
+        while(rs->next()){
+            cout<<"id = "<<rs->getInt(1)<<endl;
+            cout<<"name = "<<rs->getString(2)<<endl;
+        }
+        connPool->ReleaseConnection(con);
+        connPool->DestroyPool();
+    }else{
+        printf("GetInstance defeated!!!");
+    }
 
-    delete con;
+    
     return 0;
 }
 /* 
-g++ -Wall -I/usr/include/cppconn -o connMysql connMysql.cc ../CGImysql/ConnPool.cc ../lock/locker.h ../log/log.cc -L/usr/lib -lmysqlcppconn -lpthread
+g++ -o connMysql ../CGImysql/connpool.cc connMysql.cc -lmysqlcppconn  -I/usr/include/cppconn    ../lock/locker.h ../log/log.cc -L/usr/lib  -lpthread 
+-Wall
  */
